@@ -1,0 +1,4 @@
+enum PreferenceKey {
+  isDarkTheme,
+  language,
+}
