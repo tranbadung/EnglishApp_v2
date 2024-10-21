@@ -8,6 +8,10 @@ part 'reels_state.freezed.dart';
 class ReelsState with _$ReelsState {
   const factory ReelsState({
     @Default([]) List<YoutubeVideo> youtubeVideos,
+    @Default([]) List<String> localVideos, // Thêm trường này
+    @Default(false)
+    bool isUsingLocalVideos, // Flag để biết đang dùng video loại nào
+
     @Default(LoadingStatus.initial) LoadingStatus loadingStatus,
   }) = _ReelsState;
 }

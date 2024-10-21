@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,10 +22,14 @@ import 'package:speak_up/injection/injector.dart';
 import 'package:speak_up/presentation/navigation/app_routes.dart';
 import 'package:speak_up/presentation/pages/home/home_state.dart';
 import 'package:speak_up/presentation/pages/home/home_view_model.dart';
+import 'package:speak_up/presentation/pages/lesson/lesson_view.dart';
+import 'package:speak_up/presentation/pages/reels/reels_state.dart';
+import 'package:speak_up/presentation/pages/reels/reels_view_model.dart';
 import 'package:speak_up/presentation/resources/app_images.dart';
 import 'package:speak_up/presentation/utilities/constant/category_icon_list.dart';
 import 'package:speak_up/presentation/utilities/enums/language.dart';
 import 'package:speak_up/presentation/utilities/enums/loading_status.dart';
+import 'package:path/path.dart' as path;
 
 final homeViewModelProvider =
     StateNotifierProvider.autoDispose<HomeViewModel, HomeState>(
@@ -44,31 +50,17 @@ class HomeView extends ConsumerStatefulWidget {
 
 class _HomeViewState extends ConsumerState<HomeView> {
   HomeViewModel get _viewModel => ref.read(homeViewModelProvider.notifier);
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(Duration.zero, () async {
-      await _init();
-      Timer.periodic(Duration(seconds: 3), (Timer timer) {
-        if (_currentBannerPage < 2) {
-          _currentBannerPage++;
-        } else {
-          _currentBannerPage = 0;
-        }
-        _bannerController.animateToPage(
-          _currentBannerPage,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      });
-    });
-  }
-
   Future<void> _init() async {
+    if (!mounted) return; // Kiểm tra widget đã được gắn vào cây hay chưa
+
     await _viewModel.getCategoryList();
+    if (!mounted) return; // Kiểm tra lại sau mỗi hành động không đồng bộ
     await _viewModel.getLessonList();
+    if (!mounted) return;
     await _viewModel.getFlashCardList();
+    if (!mounted) return;
+    await _viewModel.getYoutubeVideoLists();
+    if (!mounted) return;
     await _viewModel.getYoutubeVideoLists();
   }
 
@@ -84,15 +76,53 @@ class _HomeViewState extends ConsumerState<HomeView> {
   final PageController _bannerController = PageController();
   int _currentBannerPage = 0;
 
+  Timer? _bannerTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () async {
+      await _init();
+      // Sử dụng addPostFrameCallback để đảm bảo widget đã được xây dựng
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _bannerTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
+          if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+
+          if (_currentBannerPage < 2) {
+            _currentBannerPage++;
+          } else {
+            _currentBannerPage = 0;
+          }
+
+          // Chỉ thực hiện animate khi widget còn tồn tại
+          if (_bannerController.hasClients) {
+            _bannerController.animateToPage(
+              _currentBannerPage,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          }
+        });
+      });
+    });
+  }
+
   @override
   void dispose() {
-    _bannerController.dispose();
+    _bannerTimer?.cancel(); // Hủy Timer khi widget bị dispose
+    _bannerController.dispose(); // Hủy bỏ controller để tránh lỗi
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeViewModelProvider);
+    final reelsState =
+        ref.watch(reelsViewModelProvider); // This will get the current state
+
+    print(
+        'Local videos in HomeView: ${state.localVideos}'); // Log danh sách video ở HomeView
+
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
@@ -103,7 +133,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             // buildExplore(state),
             buildConversations(state),
             // buildFlashCards(state),
-            buildReels(state),
+            buildReels(reelsState), // Pass ReelsState to buildReels
             buildSkillsEvaluationTable(),
           ],
         ),
@@ -171,6 +201,168 @@ class _HomeViewState extends ConsumerState<HomeView> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget buildReels(ReelsState reelsState) {
+    print('Local videos: ${reelsState.localVideos}');
+
+    Future<bool> checkAssetExists(String assetPath) async {
+      try {
+        await rootBundle.load(assetPath);
+        print('Asset exists: $assetPath');
+        return true;
+      } catch (e) {
+        print('Asset does not exist: $assetPath');
+        print('Error: $e');
+        return false;
+      }
+    }
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+              child: Text(
+                'Reels',
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(18),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: ScreenUtil().setHeight(4)),
+        if (reelsState.localVideos == LoadingStatus.loading)
+          SizedBox(
+            height: ScreenUtil().screenHeight * 0.3,
+            child: const Center(child: CircularProgressIndicator()),
+          )
+        else if (reelsState.localVideos.isNotEmpty)
+          SizedBox(
+            height: ScreenUtil().screenHeight * 0.3,
+            child: ListView.builder(
+              itemCount: reelsState.localVideos.length,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemBuilder: (context, index) {
+                final videoPath = reelsState.localVideos[index];
+                final videoName = path.basename(videoPath).split('.').first;
+
+                return Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  child: GestureDetector(
+                    onTap: () async {
+                      print('Checking video path: $videoPath');
+
+                      if (videoPath.startsWith('assets/')) {
+                        final exists = await checkAssetExists(videoPath);
+                        if (!exists) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content:
+                                  Text('Video asset không tồn tại: $videoPath'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+                      } else {
+                        final file = File(videoPath);
+                        print('Checking file exists: ${file.path}');
+                        if (!file.existsSync()) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'File video không tồn tại: ${file.path}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+                      }
+
+                      print('Video exists, navigating to player');
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.reels,
+                        arguments: {
+                          'videos': reelsState.localVideos,
+                          'initialIndex': index
+                        },
+                      );
+                    },
+                    child: AspectRatio(
+                      aspectRatio: 0.65,
+                      child: Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.black54),
+                              color: Colors.grey[300],
+                              image: DecorationImage(
+                                image: AssetImage(
+                                  'assets/images/video_placeholder.png',
+                                ),
+                                fit: BoxFit.cover,
+                                onError: (exception, stackTrace) {
+                                  print(
+                                      'Error loading placeholder: $exception');
+                                },
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Icon(
+                              Icons.play_circle_outline,
+                              size: 48,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 12,
+                            left: 16,
+                            right: 16,
+                            child: Text(
+                              videoName,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: ScreenUtil().setSp(12),
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    offset: const Offset(1, 1),
+                                    blurRadius: 3,
+                                    color: Colors.black.withOpacity(0.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          )
+        else
+          SizedBox(
+            height: ScreenUtil().screenHeight * 0.3,
+            child: const Center(
+              child: Text('Không có video'),
+            ),
+          ),
+      ],
     );
   }
 
@@ -621,7 +813,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
           const Spacer(),
           IconButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/category');
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => LessonView()));
             },
             icon: Icon(Icons.search,
                 color: Theme.of(context).iconTheme.color,
@@ -772,119 +965,45 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 
-  Widget buildReels(HomeState state) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              child: Text(
-                'Reels',
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(18),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Flexible(child: Container())
-          ],
-        ),
-        SizedBox(
-          height: ScreenUtil().setHeight(4),
-        ),
-        state.youtubeVideoListsLoadingStatus == LoadingStatus.success
-            ? SizedBox(
-                height: ScreenUtil().screenHeight * 0.3,
-                child: ListView.builder(
-                  itemCount: state.youtubeVideoLists.length,
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 8),
-                      child: GestureDetector(
-                        onTap: () {
-                          ref.read(appNavigatorProvider).navigateTo(
-                              AppRoutes.reels,
-                              arguments: state.youtubeVideoLists[index]);
-                        },
-                        child: AspectRatio(
-                          aspectRatio: 0.65,
-                          child: Stack(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.black54),
-                                  image: DecorationImage(
-                                    image: NetworkImage(getBestThumbnailUrl(
-                                        state.youtubeVideoLists[index].first
-                                            .thumbnails)),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom:
-                                    12, // Adjust the position of the text as needed
-                                left:
-                                    16, // Adjust the position of the text as needed
-                                right: 16,
-                                child: Text(
-                                  state.youtubeVideoLists[index].first.title ??
-                                      '',
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: ScreenUtil().setSp(12),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              )
-            : SizedBox(
-                height: ScreenUtil().screenHeight * 0.3,
-              ),
-      ],
-    );
-  }
-
   Widget buildBanner() {
     const String _imagesPath = 'assets/images';
 
     final List<String> imagePaths = [
       '$_imagesPath/banner.png',
-      '$_imagesPath/banner.png',
-      '$_imagesPath/banner.png',
-      '$_imagesPath/banner.png',
-      '$_imagesPath/banner.png',
+      '$_imagesPath/banner1.png',
+      '$_imagesPath/banner2.png',
+      '$_imagesPath/banner3.png',
+      '$_imagesPath/banner4.png',
     ];
 
     return SizedBox(
-      height: MediaQuery.of(context).size.height / 3.5, // Full screen height
+      height: MediaQuery.of(context).size.height / 4, // Full screen height
       child: PageView.builder(
         controller: _bannerController,
-        itemCount: imagePaths.length, //
+        itemCount: imagePaths.length,
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(30),
-              child: AppImages.appBanner(
-                imagePaths: [imagePaths[index]], //
-                width: double.infinity, //
-                boxFit: BoxFit.cover, // Adjust as necessary
+              borderRadius: BorderRadius.circular(25), // Đã bo đều các góc
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(25), // Bo đều góc bên trong
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                      offset: Offset(0, 4), // Tạo hiệu ứng đổ bóng
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  imagePaths[index],
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           );

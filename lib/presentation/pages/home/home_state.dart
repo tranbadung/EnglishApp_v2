@@ -19,5 +19,10 @@ class HomeState with _$HomeState {
     @Default(LoadingStatus.initial) LoadingStatus flashCardsLoadingStatus,
     @Default(LoadingStatus.initial)
     LoadingStatus youtubeVideoListsLoadingStatus,
+    @Default(false)
+    bool
+        isUsingLocalVideos, // Trường này có thể dùng để lưu trạng thái sử dụng video local
+    @Default([])
+    List<String> localVideos, // Trường để lưu danh sách video local
   }) = _HomeState;
 }

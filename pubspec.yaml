@@ -51,9 +51,9 @@ dependencies:
   path_provider: ^2.1.1
 
   # Firebase
-  firebase_core: ^2.14.0
-  firebase_auth: ^4.6.3
-  cloud_firestore: ^4.8.2
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
 
   # Authentication
   google_sign_in: ^6.1.4
@@ -78,7 +78,9 @@ dependencies:
   flutter_dotenv: ^5.1.0
 
   # YouTube Player
-  youtube_player_iframe: ^4.0.4
+  youtube_player_iframe: ^5.2.0
+  video_player: ^2.9.2
+  just_audio: ^0.9.41
 
 dev_dependencies:
   flutter_test:
@@ -243,6 +245,7 @@ flutter:
     - assets/audios/ipa/
     - assets/keys/
     - assets/database/
+    - assets/reels/
 
   fonts:
     - family: SF Pro Display

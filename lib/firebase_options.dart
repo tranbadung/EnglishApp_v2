@@ -50,23 +50,21 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyArAMp8-VzUuVWnuk1i6t-Byjjns7lMn9E',
-    appId: '1:313680244954:android:9bd751dd57415e1b7035e3',
-    messagingSenderId: '313680244954',
-    projectId: 'speak-up-flutter',
-    databaseURL: 'https://speak-up-flutter-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'speak-up-flutter.appspot.com',
+    apiKey: 'AIzaSyDoJaZnPk_j1tbaux8AV487PTG1bENNpHo',
+    appId: '1:279938469762:android:6bcaea138593e6f010c99b',
+    messagingSenderId: '279938469762',
+    projectId: 'english-app-a015a',
+    storageBucket: 'english-app-a015a.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCEYMFZCLLKTQvUaj871pSZaj4RyAe3lQM',
-    appId: '1:313680244954:ios:9c9c21df340ed3697035e3',
-    messagingSenderId: '313680244954',
-    projectId: 'speak-up-flutter',
-    databaseURL: 'https://speak-up-flutter-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'speak-up-flutter.appspot.com',
-    androidClientId: '313680244954-8d56miqncpq6du3h17ri09nvv2k97fkh.apps.googleusercontent.com',
-    iosClientId: '313680244954-a98380hqbfnds42vtajjahal00bt56pr.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCRleZWNGjXaFsLNyDWuYbd6_yGUaCBOYA',
+    appId: '1:279938469762:ios:1264efbee8b1760610c99b',
+    messagingSenderId: '279938469762',
+    projectId: 'english-app-a015a',
+    storageBucket: 'english-app-a015a.appspot.com',
+    iosClientId: '279938469762-22ge5hf76jca4u08vjnne3jkborkkm3h.apps.googleusercontent.com',
     iosBundleId: 'com.tansangle.speakUpFlutter',
   );
+
 }

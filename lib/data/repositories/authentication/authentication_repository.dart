@@ -9,8 +9,13 @@ class AuthenticationRepository {
 
   Future<UserCredential> createUserWithEmailAndPassword(
       String email, String password) async {
-    return await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email, password: password);
+    try {
+      return await _firebaseAuth.createUserWithEmailAndPassword(
+          email: email, password: password);
+    } catch (e) {
+      // Xử lý lỗi và có thể ném một ngoại lệ với thông báo rõ ràng
+      throw Exception('Failed to create user: $e');
+    }
   }
 
   Future<UserCredential> signInWithEmailAndPassword(

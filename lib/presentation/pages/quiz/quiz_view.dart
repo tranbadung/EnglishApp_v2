@@ -137,7 +137,7 @@ class _QuizViewState extends ConsumerState<QuizView> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            showExitBottomSheet(context);
+            Navigator.pushNamed(context, '/main_menu');
           },
           icon: Icon(
             Icons.close_outlined,

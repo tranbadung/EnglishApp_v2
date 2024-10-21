@@ -22,7 +22,7 @@ import 'package:speak_up/presentation/pages/pronunciation_practice/pronunciation
 import 'package:speak_up/presentation/pages/pronunciation_topic/pronunciation_topic_view.dart';
 import 'package:speak_up/presentation/pages/quiz/quiz_view.dart';
 import 'package:speak_up/presentation/pages/reels/reels_view.dart';
-import 'package:speak_up/presentation/pages/sign_in/sign_in_view.dart';
+import 'package:speak_up/presentation/pages/sign_in_gg/sign_in_view.dart';
 import 'package:speak_up/presentation/pages/sign_in_email/sign_in_email_view.dart';
 import 'package:speak_up/presentation/pages/sign_up/sign_up_view.dart';
 import 'package:speak_up/presentation/pages/splash/splash_view.dart';
@@ -227,6 +227,7 @@ class AppRouter {
             settings: settings,
           );
         }
+        
       default:
         return null;
     }

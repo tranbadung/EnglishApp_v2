@@ -66,15 +66,17 @@ class _TopicViewState extends ConsumerState<TopicView> {
 
   void scrollToCurrentMessage(GlobalKey key) {
     final RenderBox? renderBox =
-        key.currentContext?.findRenderObject() as RenderBox?;
+    key.currentContext?.findRenderObject() as RenderBox?;
     final distance = renderBox?.size.height ?? 0;
     // scroll down distance pixels
     // calculate duration based on distance
-    _scrollController.animateTo(
-      _scrollController.offset + distance,
-      duration: Duration(milliseconds: (distance * 1.5).toInt()),
-      curve: Curves.easeInOut,
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.offset + distance,
+        duration: Duration(milliseconds: (distance * 1.5).toInt()),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override

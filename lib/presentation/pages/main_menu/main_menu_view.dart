@@ -20,13 +20,23 @@ final mainMenuViewModelProvider =
     StateNotifierProvider.autoDispose<MainMenuViewModel, MainMenuState>(
   (ref) => MainMenuViewModel(),
 );
-List<Widget> _pageOptions = <Widget>[
-  const HomeView(),
-  const QuizScreenPath(),
-  const QuizStartScreen(),
-  LessonView1(),
-  ProgressTrackingScreen(),
-];
+List<Widget> _pageOptions = List.generate(5, (index) {
+  switch (index) {
+    case 0:
+      return const HomeView();
+    case 1:
+      return const QuizScreenPath();
+    case 2:
+      return const QuizStartScreen();
+    case 3:
+      return LessonView1();
+    case 4:
+      return ProgressTrackingScreen();
+    default:
+      return const HomeView();
+  }
+});
+
 
 class MainMenuView extends ConsumerWidget {
   const MainMenuView({super.key});
@@ -34,8 +44,10 @@ class MainMenuView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(mainMenuViewModelProvider);
-    return Scaffold(
-        body: _pageOptions[state.currentTabIndex],
+
+    try {
+      return Scaffold(
+        body: _pageOptions[state.currentTabIndex], // Kiểm tra giá trị này
         bottomNavigationBar: BottomNavigationBar(
           showSelectedLabels: false,
           showUnselectedLabels: false,
@@ -44,7 +56,9 @@ class MainMenuView extends ConsumerWidget {
             ref.read(mainMenuViewModelProvider.notifier).changeTab(index);
           },
           unselectedItemColor: Colors.grey,
-          selectedItemColor: Theme.of(context).primaryColor,
+          selectedItemColor: Theme
+              .of(context)
+              .primaryColor,
           items: [
             BottomNavigationBarItem(
               icon: Icon(
@@ -65,11 +79,10 @@ class MainMenuView extends ConsumerWidget {
                 Icons.quiz,
                 size: ScreenUtil().setHeight(24),
               ),
-              label: 'Phonetic',
+              label: 'Quiz',
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                //icon relate talk conversation
                 Icons.chat,
                 size: ScreenUtil().setHeight(24),
               ),
@@ -83,6 +96,11 @@ class MainMenuView extends ConsumerWidget {
               label: 'Profile',
             ),
           ],
-        ));
+        ),
+      );
+    } catch (e) {
+      print('Error: $e'); // In lỗi ra console
+      return Center(child: Text('An error occurred: $e'));
+    }
   }
 }

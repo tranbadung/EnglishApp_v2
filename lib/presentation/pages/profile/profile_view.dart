@@ -39,7 +39,8 @@ class ProgressTrackingScreen extends StatelessWidget {
         actions: [
           InkWell(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ProfileView()));
             },
             child: Padding(
               padding: const EdgeInsets.all(8.0),
