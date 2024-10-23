@@ -27,6 +27,7 @@ List<Widget> _pageOptions = List.generate(5, (index) {
     case 1:
       return const QuizScreenPath();
     case 2:
+      // return ChatView();
       return const QuizStartScreen();
     case 3:
       return LessonView1();
@@ -36,7 +37,6 @@ List<Widget> _pageOptions = List.generate(5, (index) {
       return const HomeView();
   }
 });
-
 
 class MainMenuView extends ConsumerWidget {
   const MainMenuView({super.key});
@@ -56,9 +56,7 @@ class MainMenuView extends ConsumerWidget {
             ref.read(mainMenuViewModelProvider.notifier).changeTab(index);
           },
           unselectedItemColor: Colors.grey,
-          selectedItemColor: Theme
-              .of(context)
-              .primaryColor,
+          selectedItemColor: Theme.of(context).primaryColor,
           items: [
             BottomNavigationBarItem(
               icon: Icon(

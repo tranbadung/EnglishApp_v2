@@ -184,7 +184,7 @@ class _PronunciationPracticeViewState
                       Flexible(
                         child: Text(
                           state.pronunciationAssessmentStatus
-                              .getAssistantText(context),
+                              .getAssistantText(context), 
                           style: TextStyle(
                             fontSize: ScreenUtil().setSp(14),
                             fontWeight: FontWeight.bold,
