@@ -246,7 +246,8 @@ flutter:
     - assets/keys/
     - assets/database/
     - assets/reels/
-
+    - assets/audios/test/
+ 
   fonts:
     - family: SF Pro Display
       fonts:

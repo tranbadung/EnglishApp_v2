@@ -77,7 +77,7 @@ class PronunciationTopicViewModel
       isStoppedRecording: false,
     );
     try {
-      _audioPlayer.stop();
+      await _audioPlayer.stop();
       await _startRecordingUseCase.run();
       final seconds =
           countWordInSentence(state.sentences[state.currentIndex * 2 + 1].text);
@@ -88,7 +88,7 @@ class PronunciationTopicViewModel
         }
       });
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Error starting recording: ${e.toString()}");
     }
   }
 
@@ -126,6 +126,9 @@ class PronunciationTopicViewModel
       }
       state = state.copyWith(pronunciationAssessmentStatus: status);
     } catch (e) {
+      debugPrint("Error getting pronunciation assessment: ${e.toString()}");
+      debugPrint("API call failed: ${e.toString()}"); // Ghi lại thông tin lỗi
+
       state = state.copyWith(
           pronunciationAssessmentStatus: PronunciationAssessmentStatus.failed);
     }

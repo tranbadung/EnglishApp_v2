@@ -17,7 +17,7 @@ import 'package:speak_up/presentation/navigation/app_routes.dart';
 import 'package:speak_up/presentation/pages/home/home_state.dart';
 import 'package:speak_up/presentation/pages/home/home_view_model.dart';
 import 'package:speak_up/presentation/pages/ipa/ipa_view.dart';
-import 'package:speak_up/presentation/pages/lesson/test_view.dart';
+import 'package:speak_up/presentation/pages/test/test_view.dart';
 import 'package:speak_up/presentation/utilities/enums/language.dart';
 import 'package:speak_up/presentation/utilities/enums/loading_status.dart';
 

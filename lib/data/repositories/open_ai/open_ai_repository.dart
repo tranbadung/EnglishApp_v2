@@ -7,6 +7,7 @@ class OpenAIRepository {
   final OpenAIClient _openAIClient;
 
   OpenAIRepository(this._openAIClient);
+
   Future<Message> getMessage(List<Map<String, String>> messages) async {
     final body = {
       "model": "gpt-3.5-turbo",
@@ -25,13 +26,20 @@ class OpenAIRepository {
         );
       } catch (e) {
         if (e is DioException && e.response?.statusCode == 429) {
-          print('Received status code 429. Retrying after delay...');
+          // Kiểm tra Retry-After trong header (nếu có)
+          var retryAfter = e.response?.headers.value('retry-after');
+          int delay = retryAfter != null
+              ? int.parse(retryAfter) * 1000
+              : 10000 *
+                  retryCount; // 10s nhân với retryCount nếu không có Retry-After
+
+          print('Received status code 429. Retrying after $delay ms...');
+
           retryCount++;
-          // Đặt khoảng thời gian chờ trước khi thử lại
           await Future.delayed(
-              Duration(seconds: 10 * retryCount)); // Tăng dần thời gian chờ
+              Duration(milliseconds: delay)); // Chờ trước khi thử lại
         } else {
-          // Xử lý lỗi khác
+          // Xử lý các lỗi khác
           print('Error fetching message: $e');
           throw Exception('Failed to fetch message');
         }

@@ -811,15 +811,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
           const Spacer(),
-          IconButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => LessonView()));
-            },
-            icon: Icon(Icons.search,
-                color: Theme.of(context).iconTheme.color,
-                size: ScreenUtil().setHeight(24)),
-          )
+          // IconButton(
+          //   onPressed: () {
+          //     Navigator.push(context,
+          //         MaterialPageRoute(builder: (context) => LessonView()));
+          //   },
+          //   icon: Icon(Icons.search,
+          //       color: Theme.of(context).iconTheme.color,
+          //       size: ScreenUtil().setHeight(24)),
+          // )
         ],
       ),
     );
