@@ -22,6 +22,8 @@ class HomeViewModel extends StateNotifier<HomeState> {
     this._getYoutubePlaylistByIdUseCase,
   ) : super(const HomeState());
 
+  get lessons => null;
+
   Future<void> getLessonList() async {
     if (!mounted) return;
 

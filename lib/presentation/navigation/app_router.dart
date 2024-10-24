@@ -111,13 +111,13 @@ class AppRouter {
             settings: settings,
           );
         }
-      case AppRoutes.lessons:
-        {
-          return MaterialPageRoute(
-            builder: (context) => const LessonsView(),
-            settings: settings,
-          );
-        }
+      // case AppRoutes.lessons:
+      //   {
+      //     return MaterialPageRoute(
+      //       builder: (context) => const LessonsView(),
+      //       settings: settings,
+      //     );
+      //   }
       case AppRoutes.lesson:
         {
           return MaterialPageRoute(
@@ -227,7 +227,7 @@ class AppRouter {
             settings: settings,
           );
         }
-        
+
       default:
         return null;
     }

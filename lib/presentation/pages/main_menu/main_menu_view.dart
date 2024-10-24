@@ -27,8 +27,7 @@ List<Widget> _pageOptions = List.generate(5, (index) {
     case 1:
       return const QuizScreenPath();
     case 2:
-      // return ChatView();
-      return const QuizStartScreen();
+       return const QuizStartScreen();
     case 3:
       return LessonView1();
     case 4:

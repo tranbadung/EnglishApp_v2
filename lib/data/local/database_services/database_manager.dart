@@ -53,6 +53,7 @@ class DatabaseManager {
     final maps = await db!.query('lesson');
     return List.generate(maps.length, (i) {
       return Lesson(
+        isLearned: false,
         lessonID: maps[i][LessonTable.LessonID.name] as int,
         name: maps[i][LessonTable.Name.name] as String,
         translation: maps[i][LessonTable.Translation.name] as String,

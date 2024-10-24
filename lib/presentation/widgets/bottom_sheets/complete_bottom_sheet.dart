@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:speak_up/data/providers/app_navigator_provider.dart';
 import 'package:speak_up/data/providers/app_theme_provider.dart';
+import 'package:speak_up/presentation/pages/main_menu/main_menu_view.dart';
 import 'package:speak_up/presentation/resources/app_colors.dart';
 import 'package:speak_up/presentation/resources/app_images.dart';
 
@@ -69,8 +70,9 @@ class CompleteBottomSheet extends ConsumerWidget {
                 text: AppLocalizations.of(context)!.exit,
                 fontWeight: FontWeight.bold,
                 onTap: () {
-                  Navigator.of(context).pop();
-                  ref.read(appNavigatorProvider).pop();
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => MainMenuView()));
+                  // ref.read(appNavigatorProvider).pop();
                 }),
             const SizedBox(
               height: 16,

@@ -25,6 +25,7 @@ import 'package:speak_up/presentation/pages/home/home_view_model.dart';
 import 'package:speak_up/presentation/pages/lesson/lesson_view.dart';
 import 'package:speak_up/presentation/pages/reels/reels_state.dart';
 import 'package:speak_up/presentation/pages/reels/reels_view_model.dart';
+import 'package:speak_up/presentation/pages/search/search_view.dart';
 import 'package:speak_up/presentation/resources/app_images.dart';
 import 'package:speak_up/presentation/utilities/constant/category_icon_list.dart';
 import 'package:speak_up/presentation/utilities/enums/language.dart';
@@ -811,15 +812,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
           const Spacer(),
-          // IconButton(
-          //   onPressed: () {
-          //     Navigator.push(context,
-          //         MaterialPageRoute(builder: (context) => LessonView()));
-          //   },
-          //   icon: Icon(Icons.search,
-          //       color: Theme.of(context).iconTheme.color,
-          //       size: ScreenUtil().setHeight(24)),
-          // )
+          IconButton(
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => WordSearchPage()));
+            },
+            icon: Icon(Icons.search,
+                color: Theme.of(context).iconTheme.color,
+                size: ScreenUtil().setHeight(24)),
+          )
         ],
       ),
     );
