@@ -147,8 +147,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
               child: TabBarView(
                 children: [
                   buildCoursesSection(state),
-                  // buildExplore(state),
-                  IpaView(),
+                   IpaView(),
                 ],
               ),
             ),
@@ -157,63 +156,6 @@ class _LessonView1State extends ConsumerState<LessonView1> {
       ),
     );
   }
-
-  Widget buildExplore(HomeState state) {
-    print('Lessons: ${state.lessons}'); // Kiểm tra số lượng bài học
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              child: Text(
-                "ELSA AI Conversations",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(22),
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-            // TextButton(
-            //   onPressed: () {
-            //     ref
-            //         .read(appNavigatorProvider)
-            //         .navigateTo(AppRoutes.lessons, arguments: state.lessons);
-            //   },
-            //   child: Text(
-            //     AppLocalizations.of(context)!.viewAll,
-            //     style: TextStyle(
-            //       color: Theme.of(context).colorScheme.secondary,
-            //       fontSize: ScreenUtil().setSp(14),
-            //     ),
-            //   ),
-            // ),
-          ],
-        ),
-        SizedBox(
-          height: ScreenUtil().setHeight(8),
-        ),
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: ScreenUtil().screenHeight * 0.4,
-          ),
-          child: state.lessonsLoadingStatus == LoadingStatus.success
-              ? PageView.builder(
-                  itemCount: state.lessons.length,
-                  controller: PageController(
-                      viewportFraction: 0.9), // Điều chỉnh viewportFraction
-                  itemBuilder: (context, index) =>
-                      buildExploreItem(state.lessons[index]),
-                )
-              : Center(child: CircularProgressIndicator()),
-        ),
-      ],
-    );
-  }
-
   Widget buildExploreItem(Lesson lesson) {
     print('Lessons: ${lesson.description}'); // Kiểm tra số lượng bài học
 

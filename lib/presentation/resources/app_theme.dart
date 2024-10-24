@@ -24,6 +24,7 @@ ThemeData getAppLightTheme() {
     ),
     primaryColor: AppColors.primaryColor,
     colorScheme: ColorScheme.fromSeed(
+        // ignore: deprecated_member_use
         seedColor: AppColors.primaryColor, surfaceVariant: Colors.transparent),
     useMaterial3: true,
     iconTheme: const IconThemeData(color: Colors.black),

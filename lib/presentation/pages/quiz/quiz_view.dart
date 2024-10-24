@@ -67,13 +67,10 @@ class _QuizViewState extends ConsumerState<QuizView> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      // Kiểm tra nếu không có dữ liệu từ Firebase
       var arguments = ModalRoute.of(context)?.settings.arguments;
       if (arguments == null || (arguments as List<Quiz>).isEmpty) {
-        // Sử dụng quiz mẫu nếu không có dữ liệu
         _quizzes = createSampleQuiz();
       } else {
-        // Sử dụng dữ liệu từ Firebase nếu có
         _quizzes = arguments as List<Quiz>;
       }
       setState(() {});
@@ -82,19 +79,19 @@ class _QuizViewState extends ConsumerState<QuizView> {
 
   Future<void> showQuizResultBottomSheet() async {
     ref.listen(
-        quizViewModelProvider.select((value) => value.quizAnswerCardStatus),
-        (previous, next) {
-      if (next == QuizAnswerCardStatus.after) {
-        final state = ref.watch(quizViewModelProvider);
-        final isCorrectAnswer = state.chosenAnswerIndex ==
-            _quizzes[state.currentIndex].correctAnswerIndex;
-        if (isCorrectAnswer) {
-          _viewModel.playCongratsAudio();
-        }
-        Future.delayed(
-          const Duration(milliseconds: 500),
-          () {
-            showModalBottomSheet(
+      quizViewModelProvider.select((value) => value.quizAnswerCardStatus),
+      (previous, next) {
+        if (next == QuizAnswerCardStatus.after) {
+          final state = ref.read(quizViewModelProvider); // Use ref.read here
+          final isCorrectAnswer = state.chosenAnswerIndex ==
+              _quizzes[state.currentIndex].correctAnswerIndex;
+          if (isCorrectAnswer) {
+            _viewModel.playCongratsAudio();
+          }
+          Future.delayed(
+            const Duration(milliseconds: 500),
+            () async {
+              await showModalBottomSheet(
                 enableDrag: false,
                 isDismissible: false,
                 useSafeArea: true,
@@ -104,7 +101,7 @@ class _QuizViewState extends ConsumerState<QuizView> {
                     isCorrectAnswer: isCorrectAnswer,
                     onTap: () {
                       _viewModel.onNextQuestion();
-                      Navigator.pop(context);
+                      Navigator.pop(context); // Close current bottom sheet
                       if (state.currentIndex < _quizzes.length - 1) {
                         _viewModel.pageViewController.nextPage(
                           duration: const Duration(milliseconds: 300),
@@ -112,21 +109,26 @@ class _QuizViewState extends ConsumerState<QuizView> {
                         );
                       } else {
                         _viewModel.playCompleteAudio();
-                        // title: number of correct answers / total number of questions
-                        showCompleteBottomSheet(context,
-                            title:
-                                '${AppLocalizations.of(context)!.youGot} ${state.correctAnswerNumber}/${_quizzes.length} ${AppLocalizations.of(context)!.correctAnswers}');
+                        Future.delayed(Duration.zero, () async {
+                          showCompleteBottomSheet(context,
+                              title:
+                                  '${AppLocalizations.of(context)!.youGot} ${state.correctAnswerNumber}/${_quizzes.length} ${AppLocalizations.of(context)!.correctAnswers}');
+                          // Navigator.pop(
+                          //     context);
+                        });
                       }
                     },
                     title: _quizzes[state.currentIndex].question,
                     correctAnswer: _quizzes[state.currentIndex].answers[
                         _quizzes[state.currentIndex].correctAnswerIndex],
                   );
-                });
-          },
-        );
-      }
-    });
+                },
+              );
+            },
+          );
+        }
+      },
+    );
   }
 
   @override
@@ -150,8 +152,8 @@ class _QuizViewState extends ConsumerState<QuizView> {
         ),
       ),
       body: _quizzes.isNotEmpty
-          ? buildLoadingSuccessBody() // Hiển thị quiz nếu có
-          : const AppLoadingIndicator(), // Loading nếu chưa có dữ liệu
+          ? buildLoadingSuccessBody()
+          : const AppLoadingIndicator(),
     );
   }
 

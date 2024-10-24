@@ -13,18 +13,14 @@ import 'package:speak_up/presentation/utilities/enums/loading_status.dart';
     'assets/reels/hoc-tieng-anh-video-ngan-4.mp4',
   ];
    void _loadLocalVideos() {
-    print('Loading local videos...'); // Log  được gọi
-    print('Local video paths: $_localVideoPaths'); // Log  video
-
-    // Cập nhật state
-    state = state.copyWith(
+  
+     state = state.copyWith(
       loadingStatus: LoadingStatus.success,
       localVideos: _localVideoPaths,  
       isUsingLocalVideos: true,  
     );
 
-     print('Local videos after loading: ${state.localVideos}');
-  }
+   }
 }
 
  

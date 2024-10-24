@@ -330,11 +330,38 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
 
   Widget buildReadingPassage() {
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          Image.asset('assets/audios/test/reading_passage_1.png'),
-          Image.asset('assets/audios/test/reading_passage2.png'),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "READING PASSAGE 1",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Could urban engineers learn from dance?",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            SizedBox(height: 16),
+            Text(
+              "A. The way we travel around cities has a major impact on whether they are sustainable. Transportation is estimated to account for about 30% of energy consumption in most of the world’s most developed nations, so lowering the need for energy-using vehicles is essential for cities’ long-term environmental and economic stability. But as more and more people move to cities, it is important to think about other kinds of sustainable travel too. The ways we travel affect our physical and mental health, and as social lives, our access to work and culture, and more. Engineers are tasked with changing how we move around cities through urban design, but the engineering industry still works on the assumptions that led to the creation of the energy-consuming transport systems we have now, systems emphasised placed solely on efficiency, speed, and power, at the expense of trying to make travel healthier, more enjoyable, and less environmentally damaging to create and run cities.",
+            ),
+            SizedBox(height: 16),
+            Text(
+              "B. Dance might hold some of the answers. That is not to suggest everyone should dance their way to work, however healthy and happy it might make us, but rather that the techniques used by choreographers to experiment with ideas of movement in dance could provide engineers with tools to stimulate new ideas in city-making. Richard Sennett, an influential urbanist and sociologist who has transformed ideas about how cities are made, argues that urban design has suffered from a separation between mind and body since the introduction of the architectural blueprint.",
+            ),
+            SizedBox(height: 16),
+            Text(
+              "C. Whereas medieval builders improved and adapted construction through their intimate knowledge of materials and personal experience of the places they were building, modern designers have only considered in relation to the project at a distance, detached from the physical and social realities they are affecting. While the design process created by the blueprint encourages the overuse of managing materials rather than improving the way technologies are used in favor of making better cities.",
+            ),
+            SizedBox(height: 16),
+            Text(
+              "D. To illustrate, Sennett describes the Peachtree Center in Atlanta, USA, a pedestrian precinct designed to modernist principles by a prominent urban planner in the 1970s. Peachtree was a grid of streets and towers intended as a new pedestrian-friendly corridor away from Atlanta. According to Sennett, this failed because its designers had invested too much in traffic-free principles to tell them how it would operate. They failed to take into account that purpose-built street cafes could not operate in the hot sun without the protective awnings.",
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -430,13 +457,77 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.sp),
-          child: Text(
-            'Complete the summary below.\nChoose ONE WORD ONLY from the passage for each answer.',
-            style: TextStyle(fontSize: 16.sp),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Questions 1-6",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Reading Passage 1 has seven paragraphs, A-G.",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Which paragraph contains the following information? Write the correct letter, A-G, in boxes 1-6 on your answer sheet.",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "1. reference to an appealing way of using dance that the writer is not proposing",
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                "2. an example of a contrast between past and present approaches to building",
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                "3. mention of an objective of both dance and engineering",
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                "4. reference to an unforeseen problem arising from ignoring the climate",
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                "5. why some measures intended to help people are being reversed",
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                "6. reference to how transport has an impact on human lives",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 24),
+              Text(
+                "Questions 7-13",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Complete the summary below. Choose ONE WORD ONLY from the passage for each answer. Write your answers in boxes 7-13 on your answer sheet.",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Guard rails",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Guard rails were introduced on British roads to improve the 7. _______ of pedestrians, while ensuring that the movement of 8. _______ is not disrupted. Pedestrians are led to access points and encouraged to cross one 9. _______ at a time.",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "An unintended effect is to create psychological difficulties in crossing the road, particularly for less 10. _______ people. Another result is that some people cross the road in an 11. _______ way. The guard rails separate 12. _______ and make it more difficult to introduce forms of transport that are 13. _______.",
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
           ),
         ),
-        Image.asset('assets/audios/test/reading_passage3.png'),
         ListView.builder(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),

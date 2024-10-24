@@ -5,6 +5,7 @@ class Lesson {
   final String description;
   final String descriptionTranslation;
   final String imageURL;
+  bool isLearned; // Thêm cờ để kiểm tra nếu bài học đã học
 
   Lesson({
     required this.lessonID,
@@ -13,6 +14,7 @@ class Lesson {
     required this.description,
     required this.descriptionTranslation,
     required this.imageURL,
+    required this.isLearned,
   });
 
   factory Lesson.initial() => Lesson(
@@ -22,5 +24,6 @@ class Lesson {
         description: '',
         descriptionTranslation: '',
         imageURL: '',
+        isLearned: false,
       );
 }

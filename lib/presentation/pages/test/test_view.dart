@@ -37,7 +37,7 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
             ),
             SizedBox(height: ScreenUtil().setHeight(20)),
             buildLevelFilterSection(),
-            Spacer(),
+            const Spacer(),
             Center(
               child: SizedBox(
                 width: double.infinity,
@@ -159,7 +159,7 @@ class StartTestPage extends StatelessWidget {
                   ),
                 );
               },
-              child: Text('Bắt đầu kiểm tra ngay'),
+              child: const Text('Bắt đầu kiểm tra ngay'),
             ),
           ],
         ),
