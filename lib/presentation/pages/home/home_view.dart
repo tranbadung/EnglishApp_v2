@@ -133,7 +133,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             // buildCategories(state),
             // buildExplore(state),
             buildConversations(state),
-            // buildFlashCards(state),
+            buildFlashCards(state),
             buildReels(reelsState), // Pass ReelsState to buildReels
             buildSkillsEvaluationTable(),
           ],
