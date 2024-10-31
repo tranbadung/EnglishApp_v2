@@ -1,94 +1,58 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:just_audio/just_audio.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:speak_up/presentation/pages/lesson/lesson_view.dart';
-import 'package:speak_up/presentation/pages/lesson/lessonview.dart';
+import 'package:speak_up/data/repositories/chat_gpt/chat_gpt_repository.dart';
 
-class TestQuestionwritingPage extends StatefulWidget {
-  final String skillName;
+import '../../../data/models/test.dart';
+import '../../../data/repositories/open_ai/open_ai_test.dart';
+
+class WritingTestPage extends StatefulWidget {
   final String level;
 
-  const TestQuestionwritingPage(
-      {required this.skillName, required this.level, Key? key})
-      : super(key: key);
+  const WritingTestPage({
+    required this.level,
+    Key? key,
+    required String skillName,
+  }) : super(key: key);
 
   @override
-  _TestQuestionPageState createState() => _TestQuestionPageState();
+  _WritingTestPageState createState() => _WritingTestPageState();
 }
 
-class _TestQuestionPageState extends State<TestQuestionwritingPage> {
-  final _audioPlayer = AudioPlayer();
-  List<TextEditingController> _controllers = [];
-
-  final List<Map<String, dynamic>> testQuestions = [
-    {'question': 'Address of agency: 497 Eastside, Docklands', 'blank': false},
-    {
-      'question': 'Name of agent: Becky ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': 'Smith',
-      'hint': 'Write ONE WORD'
-    },
-    {
-      'question': 'Best to call her in the ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': 'morning',
-      'hint': 'Write ONE WORD OR A NUMBER'
-    },
-    {
-      'question': 'Clerical and admin roles, mainly in the finance industry',
-      'blank': false
-    },
-    {
-      'question': 'Minimum typing speed required: ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': '50',
-      'hint': 'Write A NUMBER'
-    },
-    {
-      'question': 'Experience needed: ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': '2 years',
-      'hint': 'Write A NUMBER AND A WORD'
-    },
-    {
-      'question': 'Salary range: Starting from £',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': '25000',
-      'hint': 'Write A NUMBER'
-    },
-    {
-      'question': 'Type of contract: ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': 'permanent',
-      'hint': 'Write ONE WORD'
-    },
-  ];
-
-  int _correctAnswers = 0;
-  Duration _timeRemaining = Duration(minutes: 90);
-  Duration _audioDuration = Duration.zero;
-  Duration _currentPosition = Duration.zero;
-  bool isPlaying = false;
+class _WritingTestPageState extends State<WritingTestPage> {
+  final TextEditingController _essayController1 = TextEditingController();
+  final TextEditingController _essayController2 = TextEditingController();
+  Duration _timeRemaining = Duration(minutes: 60);
   bool isTestCompleted = false;
   Timer? _timer;
+  int _wordCount1 = 0;
+  int _wordCount2 = 0;
 
   @override
   void initState() {
     super.initState();
-    _initAudio();
     _startTimer();
-    _controllers = List.generate(
-      testQuestions.where((q) => q['blank']).length,
-      (index) => TextEditingController(),
-    );
+    _loadSavedProgress();
+    _essayController1.addListener(() => _updateWordCount(1));
+    _essayController2.addListener(() => _updateWordCount(2));
+  }
+
+  void _updateWordCount(int taskNumber) {
+    setState(() {
+      if (taskNumber == 1) {
+        _wordCount1 = _countWords(_essayController1.text);
+      } else {
+        _wordCount2 = _countWords(_essayController2.text);
+      }
+    });
+  }
+
+  int _countWords(String text) {
+    return text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .length;
   }
 
   void _startTimer() {
@@ -106,155 +70,98 @@ class _TestQuestionPageState extends State<TestQuestionwritingPage> {
     });
   }
 
-  void _submitTest() {
-    int correctCount = 0;
-    int controllerIndex = 0;
-
-    for (int i = 0; i < testQuestions.length; i++) {
-      var question = testQuestions[i];
-      if (question['blank']) {
-        String userAnswer =
-            _controllers[controllerIndex].text.toLowerCase().trim();
-        String correctAnswer = question['correctAnswer'].toLowerCase().trim();
-        if (userAnswer == correctAnswer) {
-          correctCount++;
-        }
-        controllerIndex++;
-      }
-    }
+  Future<void> _loadSavedProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedEssay1 = prefs.getString('saved_essay_1');
+    String? savedEssay2 = prefs.getString('saved_essay_2');
 
     setState(() {
-      _correctAnswers = correctCount;
+      if (savedEssay1 != null) _essayController1.text = savedEssay1;
+      if (savedEssay2 != null) _essayController2.text = savedEssay2;
     });
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => _buildResultScreen()),
-    );
-  }
-
-  Future<void> _initAudio() async {
-    try {
-      await _audioPlayer
-          .setAsset('assets/audios/test/ielts15_test1_audio1.mp3');
-      _audioPlayer.positionStream.listen((position) {
-        setState(() {
-          _currentPosition = position;
-        });
-      });
-      _audioPlayer.durationStream.listen((duration) {
-        setState(() {
-          _audioDuration = duration ?? Duration.zero;
-        });
-      });
-    } catch (e) {
-      print('Error loading audio: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Không thể tải âm thanh. Vui lòng thử lại sau.')),
-      );
-    }
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$minutes:$seconds';
   }
 
   Future<void> _saveProgress() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> answers = testQuestions
-        .where((q) => q['blank'])
-        .map((q) => q['answer'] as String)
-        .toList();
-    await prefs.setStringList('saved_answers', answers);
+    await prefs.setString('saved_essay_1', _essayController1.text);
+    await prefs.setString('saved_essay_2', _essayController2.text);
   }
 
-  Future<void> _loadProgress() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? savedAnswers = prefs.getStringList('saved_answers');
-    if (savedAnswers != null) {
-      for (int i = 0; i < testQuestions.length; i++) {
-        if (testQuestions[i]['blank']) {
-          testQuestions[i]['answer'] = savedAnswers[i];
-        }
-      }
-    }
-  }
+  void _submitTest() async {
+    setState(() {
+      isTestCompleted = true;
+    });
+    await _saveProgress();
 
-  Widget _buildAudioPlayerControls() {
-    return Column(
-      children: [
-        Slider(
-          value: _currentPosition.inSeconds.toDouble(),
-          max: _audioDuration.inSeconds.toDouble(),
-          onChanged: (value) {
-            _audioPlayer.seek(Duration(seconds: value.toInt()));
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(_formatDuration(_currentPosition)),
-              Text(_formatDuration(_audioDuration)),
-            ],
+     String feedback1 =
+        await getEssayFeedback(_essayController1.text, widget.level);
+    String feedback2 =
+        await getEssayFeedback(_essayController2.text, widget.level);
+
+ 
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WritingResultScreen(
+            feedback1: feedback1,
+            feedback2: feedback2,
+            wordCount1: _wordCount1,
+            wordCount2: _wordCount2,
           ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-              onPressed: () {
-                setState(() {
-                  if (isPlaying) {
-                    _audioPlayer.pause();
-                  } else {
-                    _audioPlayer.play();
-                  }
-                  isPlaying = !isPlaying;
-                });
-              },
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildTimerDisplay(),
-            _buildQuestionCounter(),
-          ],
-        ),
-      ],
-    );
+        ));
   }
 
   Widget _buildTimerDisplay() {
+    Color timerColor = _timeRemaining.inMinutes < 10 ? Colors.red : Colors.blue;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color:
-            _timeRemaining.inMinutes < 5 ? Colors.red[100] : Colors.blue[100],
+        color: timerColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer, color: timerColor),
+          SizedBox(width: 8),
+          Text(
+            '${_timeRemaining.inMinutes}:${(_timeRemaining.inSeconds % 60).toString().padLeft(2, '0')}',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: timerColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWordCounter(int taskNumber) {
+    int wordCount = taskNumber == 1 ? _wordCount1 : _wordCount2;
+    int minWords = taskNumber == 1 ? 150 : 250;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: wordCount >= minWords ? Colors.green[100] : Colors.orange[100],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.timer,
-            color: _timeRemaining.inMinutes < 5 ? Colors.red : Colors.blue,
+            Icons.format_size,
+            color: wordCount >= minWords ? Colors.green : Colors.orange,
           ),
           SizedBox(width: 8),
           Text(
-            'Time remaining: ${_formatDuration(_timeRemaining)}',
+            'Words: $wordCount/$minWords',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: _timeRemaining.inMinutes < 5 ? Colors.red : Colors.blue,
+              color: wordCount >= minWords ? Colors.green : Colors.orange,
             ),
           ),
         ],
@@ -262,140 +169,125 @@ class _TestQuestionPageState extends State<TestQuestionwritingPage> {
     );
   }
 
-  Widget _buildQuestionCounter() {
-    int totalQuestions = testQuestions.where((q) => q['blank']).length;
-    int answeredQuestions = testQuestions
-        .where((q) => q['blank'] && q['answer'].toString().isNotEmpty)
-        .length;
+  Widget _buildTaskSection(int taskNumber) {
+    Map<String, dynamic> task = writingTasks[taskNumber - 1];
+    TextEditingController controller =
+        taskNumber == 1 ? _essayController1 : _essayController2;
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.green[100],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return Card(
+      margin: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.question_answer, color: Colors.green),
-          SizedBox(width: 8),
-          Text(
-            'Questions: $answeredQuestions/$totalQuestions',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildTestScreen() {
-    int blankIndex =
-        0; // Đặt biến blankIndex ở cấp độ local để theo dõi index của các câu hỏi có chỗ trống
-
-    return Scaffold(
-      appBar: AppBar(title: Text('Test Screen')),
-      body: Column(
-        children: [
-          _buildAudioPlayerControls(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: testQuestions.length,
-              itemBuilder: (context, index) {
-                var questionData = testQuestions[index];
-                if (questionData['blank']) {
-                  var widget = buildQuestionCard(questionData, blankIndex);
-                  blankIndex++; // Tăng blankIndex sau khi hiển thị một câu hỏi có chỗ trống
-                  return widget;
-                }
-                return buildQuestionCard(questionData, index);
-              },
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _submitTest,
-        child: Icon(Icons.check),
-      ),
-    );
-  }
-
-  Widget buildQuestionCard(Map<String, dynamic> questionData, int blankIndex) {
-    if (questionData['blank']) {
-      return Card(
-        margin: EdgeInsets.all(10),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                questionData['question'],
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(4),
+                topRight: Radius.circular(4),
               ),
-              TextField(
-                controller: _controllers[blankIndex],
-                decoration: InputDecoration(
-                  hintText: questionData['hint'],
-                  hintStyle: TextStyle(
-                    fontSize: ScreenUtil().setSp(16),
-                    color: Colors.grey[600],
-                  ),
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.blueAccent),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Writing Task $taskNumber',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    questionData['answer'] = value;
-                  });
-                },
-              ),
-            ],
+                SizedBox(height: 8),
+                _buildWordCounter(taskNumber),
+              ],
+            ),
           ),
-        ),
-      );
-    } else {
-      return Card(
-        margin: EdgeInsets.all(10),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                questionData['question'],
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
+
+           if (task['imageAsset'] != '')
+            Image.asset(
+              task['imageAsset'],
+              fit: BoxFit.contain,
+            ),
+
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              task['prompt'],
+              style: TextStyle(fontSize: 16),
+            ),
           ),
-        ),
-      );
-    }
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: TextField(
+              controller: controller,
+              maxLines: null,
+              decoration: InputDecoration(
+                hintText: 'Write your response here...',
+                border: OutlineInputBorder(),
+              ),
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget _buildResultScreen() {
-    // Đếm lại số câu trả lời đúng để đảm bảo chính xác
-    int totalQuestions = testQuestions.where((q) => q['blank']).length;
-    double percentage = (_correctAnswers / totalQuestions) * 100;
+  Widget _buildTestScreen() {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('IELTS Writing Test'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.save),
+            onPressed: _saveProgress,
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: _buildTimerDisplay(),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildTaskSection(1),
+                  _buildTaskSection(2),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _submitTest,
+        label: Text('Submit Test'),
+        icon: Icon(Icons.check),
+      ),
+    );
+  }
+
+  Widget _buildResultScreen(String feedback1, String feedback2) {
+    bool task1Passed = _wordCount1 >= 150;
+    bool task2Passed = _wordCount2 >= 250;
+    bool overallPassed = task1Passed && task2Passed;
 
     return Scaffold(
       appBar: AppBar(title: Text('Test Results')),
       body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              margin: EdgeInsets.all(16),
+             Card(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: EdgeInsets.all(16),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Test Completed!',
@@ -406,89 +298,93 @@ class _TestQuestionPageState extends State<TestQuestionwritingPage> {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'Your Score:',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '$_correctAnswers/$totalQuestions',
+                      overallPassed
+                          ? 'Congratulations! You passed both tasks.'
+                          : 'You didn\'t meet the word requirement for one or both tasks.',
                       style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: percentage >= 75
-                            ? Colors.green
-                            : percentage >= 50
-                                ? Colors.orange
-                                : Colors.red,
+                        fontSize: 16,
+                        color: overallPassed ? Colors.green : Colors.red,
                       ),
-                    ),
-                    Text(
-                      '${percentage.toStringAsFixed(1)}%',
-                      style: TextStyle(fontSize: 24, color: Colors.grey),
                     ),
                   ],
                 ),
               ),
             ),
-            // Hiển thị chi tiết đáp án
-            Card(
-              margin: EdgeInsets.all(16),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Answer Details:',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    ...testQuestions.where((q) => q['blank']).map((q) {
-                      String userAnswer = (q['answer'] ?? '').toString();
-                      String correctAnswer = q['correctAnswer'].toString();
-                      bool isCorrect = userAnswer.toLowerCase().trim() ==
-                          correctAnswer.toLowerCase().trim();
 
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(q['question'],
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                            Row(
-                              children: [
-                                Text('Your answer: $userAnswer'),
-                                SizedBox(width: 8),
-                                Icon(
-                                  isCorrect ? Icons.check_circle : Icons.cancel,
-                                  color: isCorrect ? Colors.green : Colors.red,
-                                  size: 16,
-                                ),
-                              ],
-                            ),
-                            Text('Correct answer: $correctAnswer',
-                                style: TextStyle(color: Colors.green)),
-                            Divider(),
-                          ],
+             ...[1, 2].map((taskNum) {
+              int wordCount = taskNum == 1 ? _wordCount1 : _wordCount2;
+              int minWords = taskNum == 1 ? 150 : 250;
+              bool passed = wordCount >= minWords;
+              String feedback = taskNum == 1 ? feedback1 : feedback2;
+
+              return Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Writing Task $taskNum',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    }).toList(),
-                  ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Words: $wordCount/$minWords',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: passed ? Colors.green : Colors.red,
+                        ),
+                      ),
+                      Text(
+                        passed
+                            ? 'You met the word count requirement!'
+                            : 'Word count requirement not met.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: passed ? Colors.green : Colors.red,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Feedback:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        feedback,
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              );
+            }).toList(),
+
+             SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                   },
+                  child: Text('Submit'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.popUntil(
+                        context, ModalRoute.withName('/main_menu'));
+                  },
+                  child: Text('Back to Home'),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => LessonView1()));
-              },
-              child: Text('Back to Home'),
-            ),
-            SizedBox(height: 20),
           ],
         ),
       ),
@@ -496,14 +392,15 @@ class _TestQuestionPageState extends State<TestQuestionwritingPage> {
   }
 
   @override
-  void dispose() {
-    _audioPlayer.dispose();
-    _timer?.cancel();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return isTestCompleted ? _buildResultScreen('', '') : _buildTestScreen();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return buildTestScreen();
+  void dispose() {
+    _timer?.cancel();
+    _essayController1.dispose();
+    _essayController2.dispose();
+    super.dispose();
   }
 }

@@ -8,6 +8,7 @@ import 'package:speak_up/domain/entities/youtube_video/youtube_video.dart';
 import 'package:speak_up/domain/use_cases/youtube/get_youtube_playlist_by_id_use_case.dart';
 import 'package:speak_up/injection/injector.dart';
 import 'package:speak_up/presentation/navigation/app_routes.dart';
+import 'package:speak_up/presentation/pages/chat/chat_view.dart';
 import 'package:speak_up/presentation/pages/home/home_state.dart';
 import 'dart:math';
 import 'package:speak_up/presentation/pages/home/home_view_model.dart';
@@ -67,39 +68,31 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
   int _currentBannerPage = 0;
   Timer? _bannerTimer;
 
-  Future<void> _init() async {
-    if (!mounted) return;
-
-    await _viewModel.getCategoryList();
-    if (!mounted) return;
-    if (_viewModel.lessons == null || _viewModel.lessons.isEmpty) {
-      print("Lessons data is null or empty");
-    } else {
-      print("Lessons data loaded successfully");
-    }
-    if (!mounted) return;
-    await _viewModel.getFlashCardList();
-    if (!mounted) return;
-    await _viewModel.getYoutubeVideoLists();
+  @override
+  Future<void> _loadLessonsAndStates() async {
+    await _viewModel.getLessonList();
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (_viewModel.lessons == null || _viewModel.lessons.isEmpty) {
+      return;
+    }
+
     for (var lesson in _viewModel.lessons) {
       lesson.isLearned =
           prefs.getBool('lesson_${lesson.lessonID}_isLearned') ?? false;
-
       print('Trạng thái của bài học ${lesson.lessonID}: ${lesson.isLearned}');
     }
 
-    setState(() {});
+    setState(() {}); 
   }
 
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () async {
-      await _init();
-      setState(() {});
-      _setupBannerTimer();
+      await _loadLessonsAndStates();  
+      _setupBannerTimer();  
     });
   }
 
@@ -123,20 +116,47 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
     });
   }
 
+  Future<void> _loadLessonStates() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      for (var lesson in _viewModel.lessons) {
+        lesson.isLearned =
+            prefs.getBool('lesson_${lesson.lessonID}_isLearned') ?? false;
+      }
+    });
+  }
+
+   Future<void> _saveLessonState(Lesson lesson) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(
+        'lesson_${lesson.lessonID}_isLearned', lesson.isLearned);
+    print('Saved lesson ${lesson.lessonID} state: ${lesson.isLearned}');
+  }
+
+  void _navigateToLesson(Lesson lesson) async {
+     setState(() {
+      lesson.isLearned = true;
+    });
+    await _saveLessonState(lesson);
+
+    if (!mounted) return;
+
+    ref.read(appNavigatorProvider).navigateTo(
+          AppRoutes.lesson,
+          arguments: lesson,
+        );
+  }
+
   void completeLesson(Lesson lesson) async {
     lesson.isLearned = true;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('lesson_${lesson.lessonID}_isLearned', true);
 
-    print('Lưu trạng thái cho bài học ${lesson.lessonID}: ${lesson.isLearned}');
-  }
+     await _loadLessonStates();
 
-  @override
-  void dispose() {
-    _bannerTimer?.cancel();
-    _bannerController.dispose();
-    super.dispose();
+    setState(() {});
+    print('Lưu trạng thái cho bài học ${lesson.lessonID}: ${lesson.isLearned}');
   }
 
   Widget buildLessonModal(Lesson lesson) {
@@ -178,12 +198,12 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
           const SizedBox(height: 16),
           const Spacer(),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                lesson.isLearned = true; //
-              });
-              Navigator.pop(context);
-              _navigateToLesson(lesson);
+          
+            onPressed: () async {
+              Navigator.pop(context); 
+              await _saveLessonState(
+                  lesson);  
+              _navigateToLesson(lesson);  
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple.shade200,
@@ -206,12 +226,18 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
     );
   }
 
-  void _navigateToLesson(Lesson lesson) {
-    ref.read(appNavigatorProvider).navigateTo(
-          AppRoutes.lesson,
-          arguments: lesson,
-        );
+  Future<void> _loadLessons() async {
+    await _viewModel.getLessonList();
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    for (var lesson in _viewModel.lessons) {
+      lesson.isLearned =
+          prefs.getBool('lesson_${lesson.lessonID}_isLearned') ?? false;
+    }
+    setState(() {});
   }
+
+ 
 
   Widget buildNode(int index, Lesson lesson) {
     return GestureDetector(
@@ -253,8 +279,8 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
         child: ClipOval(
           child: Image.asset(
             lesson.isLearned
-                ? 'assets/images/Screenshot_2024-10-24_153614-removebg-preview.png' // Hình ảnh ngôi sao màu xanh lá
-                : 'assets/images/Screenshot_2024-10-17_161446-removebg-preview.png', // Hình ảnh ngôi sao mặc định
+                ? 'assets/images/Screenshot_2024-10-24_153614-removebg-preview.png' 
+                : 'assets/images/Screenshot_2024-10-17_161446-removebg-preview.png',  
           ),
         ),
       ),
@@ -291,7 +317,7 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
             ),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: const Text(
-              'Unit 1: Chào hỏi hằng ngày',
+              'Unit 1: Lộ Trình học tiếng anh.',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -355,6 +381,15 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatView()),
+          );
+        },
+        child: Image.asset('assets/images/chatbot.png'),
       ),
     );
   }

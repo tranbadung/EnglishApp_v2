@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:speak_up/data/models/test.dart';
 import 'package:speak_up/domain/entities/flash_card/flash_card.dart';
 import 'package:speak_up/domain/use_cases/firestore/add_flash_card_use_case.dart';
 import 'package:speak_up/domain/use_cases/text_to_speech/speak_from_text_use_case.dart';
@@ -45,56 +46,14 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
   }
 
   Future<void> _init() async {
-    // Retrieve the flashcards from the route arguments or use sample data if none is provided
     flashCards =
         ModalRoute.of(context)?.settings.arguments as List<FlashCard>? ??
-            _getSampleFlashCards();
+            getSampleFlashCards();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _viewModel.init(flashCards[0].frontText);
     });
     setState(() {});
-  }
-
-// Create a method to return sample flashcards
-  List<FlashCard> _getSampleFlashCards() {
-    return [
-      FlashCard(
-        userID: "",
-        flashcardID: 1,
-        frontText: 'Hello',
-        backText: 'Xin chào',
-        backTranslation: 'Vietnamese',
-      ),
-      FlashCard(
-        userID: "",
-        flashcardID: 2,
-        frontText: 'Goodbye',
-        backText: 'Tạm biệt',
-        backTranslation: 'Vietnamese',
-      ),
-      FlashCard(
-        userID: "",
-        flashcardID: 3,
-        frontText: 'Thank you',
-        backText: 'Cảm ơn',
-        backTranslation: 'Vietnamese',
-      ),
-      FlashCard(
-        userID: "",
-        flashcardID: 4,
-        frontText: 'Yes',
-        backText: 'Vâng',
-        backTranslation: 'Vietnamese',
-      ),
-      FlashCard(
-        userID: "",
-        flashcardID: 5,
-        frontText: 'No',
-        backText: 'Không',
-        backTranslation: 'Vietnamese',
-      ),
-    ];
   }
 
   @override

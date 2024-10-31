@@ -17,6 +17,47 @@ class FirestoreRepository {
     });
   }
 
+  Future<void> updateUserActivity() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final today =
+          DateTime.now().toIso8601String().split('T')[0]; // Ngày hiện tại
+
+      // Lấy document của người dùng
+      DocumentReference userActivityRef =
+          _firestore.collection('user_activity').doc(userId);
+
+      // Cập nhật thông tin
+      await userActivityRef.set({
+        'userId': userId,
+        'accessDates': FieldValue.arrayUnion([today]), // Thêm ngày truy cập
+        'totalHours': FieldValue.increment(1) // Tăng số giờ
+      }, SetOptions(merge: true)); // Sử dụng merge để không ghi đè document
+    }
+  }
+
+  Future<Map<String, dynamic>> getUserActivity() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final snapshot =
+          await _firestore.collection('user_activity').doc(userId).get();
+
+      if (snapshot.exists) {
+        final data = snapshot.data();
+        return {
+          'daysVisited': (data?['accessDates'] as List<dynamic>)?.length ?? 0,
+          'totalHours': data?['totalHours'] ?? 0,
+        };
+      }
+    }
+    return {
+      'daysVisited': 0,
+      'totalHours': 0,
+    };
+  }
+
   Future<void> updateDisplayName(String name, String uid) async {
     await _firestore.collection('users').doc(uid).update({'name': name});
   }

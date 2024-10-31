@@ -21,8 +21,8 @@ class HomeState with _$HomeState {
     LoadingStatus youtubeVideoListsLoadingStatus,
     @Default(false)
     bool
-        isUsingLocalVideos, // Trường này có thể dùng để lưu trạng thái sử dụng video local
+        isUsingLocalVideos,  
     @Default([])
-    List<String> localVideos, // Trường để lưu danh sách video local
+    List<String> localVideos,  
   }) = _HomeState;
 }

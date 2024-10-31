@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speak_up/domain/entities/lesson/lesson.dart';
 import 'package:speak_up/domain/use_cases/firestore/get_flash_card_list_use_case.dart';
 import 'package:speak_up/domain/use_cases/firestore/get_youtube_playlist_id_list_use_case.dart';
 import 'package:speak_up/domain/use_cases/local_database/get_category_list_use_case.dart';
@@ -22,8 +23,6 @@ class HomeViewModel extends StateNotifier<HomeState> {
     this._getYoutubePlaylistByIdUseCase,
   ) : super(const HomeState());
 
-  get lessons => null;
-
   Future<void> getLessonList() async {
     if (!mounted) return;
 
@@ -40,6 +39,9 @@ class HomeViewModel extends StateNotifier<HomeState> {
       rethrow;
     }
   }
+
+// Truy cập danh sách bài học thông qua state.lessons
+  List<Lesson> get lessons => state.lessons;
 
   Future<void> getCategoryList() async {
     if (!mounted) return;

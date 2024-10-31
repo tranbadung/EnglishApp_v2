@@ -1,42 +1,49 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-class WritingResultScreen extends StatelessWidget {
-  final String feedback1;
-  final String feedback2;
-  final int wordCount1;
-  final int wordCount2;
+import 'package:flutter/material.dart';
 
-  const WritingResultScreen({
+class SpeakingResultScreen extends StatelessWidget {
+  final String feedback;
+  final Map<String, Duration> partDurations;
+
+  const SpeakingResultScreen({
     Key? key,
-    required this.feedback1,
-    required this.feedback2,
-    required this.wordCount1,
-    required this.wordCount2,
+    required this.feedback,
+    required this.partDurations,
   }) : super(key: key);
 
   // Parse GPT response to extract score and feedback
   Map<String, dynamic> _parseGPTFeedback(String feedback) {
-    // Expected format: Score followed by detailed feedback
-    RegExp scoreRegex = RegExp(r'(?:Band Score:|Score:)\s*(\d+\.?\d*)');
-    var scoreMatch = scoreRegex.firstMatch(feedback);
-    double score =
-        scoreMatch != null ? double.parse(scoreMatch.group(1) ?? "0.0") : 0.0;
+    // Sử dụng try-catch để xử lý lỗi khi định dạng không đúng
+    try {
+      RegExp scoreRegex = RegExp(r'(?:Band Score:|Score:)\s*(\d+\.?\d*)');
+      var scoreMatch = scoreRegex.firstMatch(feedback);
+      double score =
+          scoreMatch != null ? double.parse(scoreMatch.group(1)!) : 0.0;
 
-    return {
-      'score': score,
-      'feedback': feedback,
-      'criteriaScores': _extractCriteriaScores(feedback),
-    };
+      return {
+        'score': score,
+        'feedback': feedback,
+        'criteriaScores': _extractCriteriaScores(feedback),
+      };
+    } catch (e) {
+      print("Error parsing feedback: $e");
+      return {
+        'score': 0.0,
+        'feedback': "Error in feedback format",
+        'criteriaScores': {},
+      };
+    }
   }
 
-  // Extract individual criteria scores if present in feedback
+  // Extract individual criteria scores for Speaking
   Map<String, double> _extractCriteriaScores(String feedback) {
     Map<String, double> scores = {
-      'Task Achievement': 0.0,
-      'Coherence and Cohesion': 0.0,
+      'Fluency and Coherence': 0.0,
       'Lexical Resource': 0.0,
       'Grammatical Range': 0.0,
+      'Pronunciation': 0.0,
     };
 
     for (var criterion in scores.keys) {
@@ -53,9 +60,11 @@ class WritingResultScreen extends StatelessWidget {
   Widget _buildScoreCard(String title, double score) {
     return Card(
       elevation: 2,
-      child: Container(
-        padding: EdgeInsets.all(16),
+      margin: EdgeInsets.all(12),
+      child: Padding(
+        padding: EdgeInsets.all(20),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               title,
@@ -65,10 +74,10 @@ class WritingResultScreen extends StatelessWidget {
                 color: Colors.grey[700],
               ),
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 12),
             Container(
-              width: 60,
-              height: 60,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: _getScoreColor(score),
@@ -77,7 +86,7 @@ class WritingResultScreen extends StatelessWidget {
                 child: Text(
                   score.toStringAsFixed(1),
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -153,6 +162,60 @@ class WritingResultScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildPartDurations() {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Speaking Parts Duration',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[800],
+              ),
+            ),
+            SizedBox(height: 16),
+            ...partDurations.entries.map((entry) {
+              final duration = entry.value;
+              final minutes = duration.inMinutes;
+              final seconds = duration.inSeconds % 60;
+              final durationText =
+                  '$minutes:${seconds.toString().padLeft(2, '0')}';
+
+              return Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Part ${entry.key}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      durationText,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFeedbackSection(String title, String feedback) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -185,14 +248,12 @@ class WritingResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final task1Results = _parseGPTFeedback(feedback1);
-    final task2Results = _parseGPTFeedback(feedback2);
-    final overallScore = ((task1Results['score'] + task2Results['score']) / 2)
-        .toStringAsFixed(1);
+    final results = _parseGPTFeedback(feedback);
+    final score = results['score'];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('IELTS Writing Results'),
+        title: Text('IELTS Speaking Results'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -204,7 +265,7 @@ class WritingResultScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    'Overall Band Score',
+                    'Speaking Band Score',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -212,35 +273,16 @@ class WritingResultScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildScoreCard('Task 1', task1Results['score']),
-                      _buildScoreCard('Task 2', task2Results['score']),
-                      _buildScoreCard('Overall', double.parse(overallScore)),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Word Count: Task 1: $wordCount1/150 | Task 2: $wordCount2/250',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.blue[700],
-                    ),
-                  ),
+                  _buildScoreCard('Overall', score),
                 ],
               ),
             ),
+            _buildPartDurations(),
             _buildCriteriaSection(
-              'Task 1 Criteria Scores',
-              task1Results['criteriaScores'],
+              'Speaking Criteria Scores',
+              results['criteriaScores'],
             ),
-            _buildFeedbackSection('Task 1 Feedback', task1Results['feedback']),
-            _buildCriteriaSection(
-              'Task 2 Criteria Scores',
-              task2Results['criteriaScores'],
-            ),
-            _buildFeedbackSection('Task 2 Feedback', task2Results['feedback']),
+            _buildFeedbackSection('Chargpt Feedback', results['feedback']),
             Padding(
               padding: EdgeInsets.all(16),
               child: Row(

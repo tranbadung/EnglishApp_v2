@@ -27,8 +27,9 @@ List<Widget> _pageOptions = List.generate(5, (index) {
     case 1:
       return const QuizScreenPath();
     case 2:
-       return const QuizStartScreen();
+      return const QuizStartScreen();
     case 3:
+      // return ChatView();
       return LessonView1();
     case 4:
       return ProgressTrackingScreen();
@@ -46,7 +47,7 @@ class MainMenuView extends ConsumerWidget {
 
     try {
       return Scaffold(
-        body: _pageOptions[state.currentTabIndex], // Kiểm tra giá trị này
+        body: _pageOptions[state.currentTabIndex],
         bottomNavigationBar: BottomNavigationBar(
           showSelectedLabels: false,
           showUnselectedLabels: false,
@@ -93,6 +94,18 @@ class MainMenuView extends ConsumerWidget {
               label: 'Profile',
             ),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ChatView()),
+            );
+          },
+          child: Image.asset(
+            'assets/images/chatbot.png',
+            fit: BoxFit.cover,
+          ),
         ),
       );
     } catch (e) {

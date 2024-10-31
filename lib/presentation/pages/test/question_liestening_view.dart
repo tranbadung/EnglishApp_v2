@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speak_up/data/models/test.dart';
 import 'package:speak_up/presentation/pages/lesson/lesson_view.dart';
 import 'package:speak_up/presentation/pages/lesson/lessonview.dart';
 
@@ -21,56 +22,6 @@ class TestQuestionlisteningPage extends StatefulWidget {
 class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
   final _audioPlayer = AudioPlayer();
   List<TextEditingController> _controllers = [];
-
-  final List<Map<String, dynamic>> testQuestions = [
-    {'question': 'Address of agency: 497 Eastside, Docklands', 'blank': false},
-    {
-      'question': 'Name of agent: Becky ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': 'Smith',
-      'hint': 'Write ONE WORD'
-    },
-    {
-      'question': 'Best to call her in the ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': 'morning',
-      'hint': 'Write ONE WORD OR A NUMBER'
-    },
-    {
-      'question': 'Clerical and admin roles, mainly in the finance industry',
-      'blank': false
-    },
-    {
-      'question': 'Minimum typing speed required: ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': '50',
-      'hint': 'Write A NUMBER'
-    },
-    {
-      'question': 'Experience needed: ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': '2 years',
-      'hint': 'Write A NUMBER AND A WORD'
-    },
-    {
-      'question': 'Salary range: Starting from £',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': '25000',
-      'hint': 'Write A NUMBER'
-    },
-    {
-      'question': 'Type of contract: ',
-      'blank': true,
-      'answer': '',
-      'correctAnswer': 'permanent',
-      'hint': 'Write ONE WORD'
-    },
-  ];
 
   int _correctAnswers = 0;
   Duration _timeRemaining = Duration(minutes: 90);
@@ -381,7 +332,7 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
   }
 
   Widget _buildResultScreen() {
-     int totalQuestions = testQuestions.where((q) => q['blank']).length;
+    int totalQuestions = testQuestions.where((q) => q['blank']).length;
     double percentage = (_correctAnswers / totalQuestions) * 100;
 
     return Scaffold(

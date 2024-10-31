@@ -14,6 +14,7 @@ import 'package:speak_up/domain/use_cases/local_database/get_category_list_use_c
 import 'package:speak_up/domain/use_cases/youtube/get_youtube_playlist_by_id_use_case.dart';
 import 'package:speak_up/injection/injector.dart';
 import 'package:speak_up/presentation/navigation/app_routes.dart';
+import 'package:speak_up/presentation/pages/chat/chat_view.dart';
 import 'package:speak_up/presentation/pages/home/home_state.dart';
 import 'package:speak_up/presentation/pages/home/home_view_model.dart';
 import 'package:speak_up/presentation/pages/ipa/ipa_view.dart';
@@ -42,10 +43,9 @@ class LessonView1 extends ConsumerStatefulWidget {
 class _LessonView1State extends ConsumerState<LessonView1> {
   HomeViewModel get _viewModel => ref.read(homeViewModelProvider.notifier);
   Future<void> _init() async {
-    if (!mounted) return; // Kiểm tra widget đã được gắn vào cây hay chưa
-
+    if (!mounted) return;  
     await _viewModel.getCategoryList();
-    if (!mounted) return; // Kiểm tra lại sau mỗi hành động không đồng bộ
+    if (!mounted) return;  
     await _viewModel.getLessonList();
     if (!mounted) return;
     await _viewModel.getFlashCardList();
@@ -74,10 +74,10 @@ class _LessonView1State extends ConsumerState<LessonView1> {
     super.initState();
     Future.delayed(Duration.zero, () async {
       await _init();
-      // Sử dụng addPostFrameCallback để đảm bảo widget đã được xây dựng
+      
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _bannerTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
-          if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+          if (!mounted) return; 
 
           if (_currentBannerPage < 2) {
             _currentBannerPage++;
@@ -85,8 +85,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
             _currentBannerPage = 0;
           }
 
-          // Chỉ thực hiện animate khi widget còn tồn tại
-          if (_bannerController.hasClients) {
+           if (_bannerController.hasClients) {
             _bannerController.animateToPage(
               _currentBannerPage,
               duration: Duration(milliseconds: 300),
@@ -100,8 +99,8 @@ class _LessonView1State extends ConsumerState<LessonView1> {
 
   @override
   void dispose() {
-    _bannerTimer?.cancel(); // Hủy Timer khi widget bị dispose
-    _bannerController.dispose(); // Hủy bỏ controller để tránh lỗi
+    _bannerTimer?.cancel();  
+    _bannerController.dispose();  
     super.dispose();
   }
 
@@ -147,17 +146,27 @@ class _LessonView1State extends ConsumerState<LessonView1> {
               child: TabBarView(
                 children: [
                   buildCoursesSection(state),
-                   IpaView(),
+                  IpaView(),
                 ],
               ),
             ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatView()),
+          );
+        },
+        child: Image.asset('assets/images/chatbot.png'),
+      ),
     );
   }
+
   Widget buildExploreItem(Lesson lesson) {
-    print('Lessons: ${lesson.description}'); // Kiểm tra số lượng bài học
+    
 
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
@@ -244,8 +253,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          // Kiểm tra trạng thái loading
-          state.lessonsLoadingStatus == LoadingStatus.success
+           state.lessonsLoadingStatus == LoadingStatus.success
               ? SizedBox(
                   height: 300,
                   child: ListView.builder(
@@ -273,8 +281,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
     );
   }
 
-// Cập nhật hàm buildCourseCard
-  Widget buildCourseCard(Lesson lesson) {
+   Widget buildCourseCard(Lesson lesson) {
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
 
@@ -408,8 +415,9 @@ class _LessonView1State extends ConsumerState<LessonView1> {
         subtitle: Text(description),
         trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () {
-          // Điều hướng tới trang kiểm tra của kỹ năng
-          Navigator.push(
+ 
+ 
+           Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => SkillDetailPage(skillName: skillName)),
