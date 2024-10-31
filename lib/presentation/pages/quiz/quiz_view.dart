@@ -19,6 +19,8 @@ import 'package:speak_up/presentation/widgets/cards/quiz_answer_card.dart';
 import 'package:speak_up/presentation/widgets/loading_indicator/app_loading_indicator.dart';
 import 'package:speak_up/presentation/widgets/percent_indicator/app_linear_percent_indicator.dart';
 
+import '../../../data/models/test.dart';
+
 final quizViewModelProvider =
     StateNotifierProvider.autoDispose<QuizViewModel, QuizState>(
   (ref) => QuizViewModel(
@@ -27,30 +29,6 @@ final quizViewModelProvider =
     injector.get<PlayCompleteAudioUseCase>(),
   ),
 );
-List<Quiz> createSampleQuiz() {
-  return [
-    Quiz(
-      question: 'What is the capital of France?',
-      answers: ['Paris', 'London', 'Berlin', 'Madrid'],
-      correctAnswerIndex: 0,
-    ),
-    Quiz(
-      question: 'What is 2 + 2?',
-      answers: ['3', '4', '5', '6'],
-      correctAnswerIndex: 1,
-    ),
-    Quiz(
-      question: 'Who wrote "Hamlet"?',
-      answers: ['Shakespeare', 'Dickens', 'Hemingway', 'Tolkien'],
-      correctAnswerIndex: 0,
-    ),
-    Quiz(
-      question: 'What is the largest planet in our Solar System?',
-      answers: ['Earth', 'Mars', 'Jupiter', 'Saturn'],
-      correctAnswerIndex: 2,
-    ),
-  ];
-}
 
 class QuizView extends ConsumerStatefulWidget {
   const QuizView({super.key});
@@ -101,7 +79,7 @@ class _QuizViewState extends ConsumerState<QuizView> {
                     isCorrectAnswer: isCorrectAnswer,
                     onTap: () {
                       _viewModel.onNextQuestion();
-                      Navigator.pop(context); // Close current bottom sheet
+                      Navigator.pop(context);
                       if (state.currentIndex < _quizzes.length - 1) {
                         _viewModel.pageViewController.nextPage(
                           duration: const Duration(milliseconds: 300),
@@ -113,8 +91,6 @@ class _QuizViewState extends ConsumerState<QuizView> {
                           showCompleteBottomSheet(context,
                               title:
                                   '${AppLocalizations.of(context)!.youGot} ${state.correctAnswerNumber}/${_quizzes.length} ${AppLocalizations.of(context)!.correctAnswers}');
-                          // Navigator.pop(
-                          //     context);
                         });
                       }
                     },

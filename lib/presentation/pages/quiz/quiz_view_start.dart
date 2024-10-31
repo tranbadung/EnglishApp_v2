@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:speak_up/presentation/pages/chat/chat_view.dart';
 import 'package:speak_up/presentation/pages/flash_cards/flash_cards_view.dart';
 import 'package:speak_up/presentation/pages/quiz/quiz_view.dart';
 
@@ -30,8 +31,8 @@ class QuizStartScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Thông báo "ngay lập tức Bắt đầu bài kiểm tra!"
-                Container(
+ 
+                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: Colors.purple[100],
@@ -49,16 +50,14 @@ class QuizStartScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
 
-                // Hình ảnh biểu tượng cấp độ
-                CircleAvatar(
+                 CircleAvatar(
                   radius: 40.r,
                   backgroundImage: AssetImage(
-                      'assets/images/avatar.png'), // Thay bằng hình ảnh bạn muốn
+                      'assets/images/avatar.png'), 
                 ),
                 SizedBox(height: 16.h),
 
-                // Text Lv.0 và mô tả
-                Text(
+                 Text(
                   'Quiz Today',
                   style: TextStyle(
                     fontSize: 28.sp,
@@ -76,8 +75,7 @@ class QuizStartScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 24.h),
 
-                // Nút bắt đầu quiz
-                SizedBox(
+                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
@@ -107,8 +105,7 @@ class QuizStartScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
 
-                // Nút kiểm tra flashcard
-                SizedBox(
+                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
@@ -140,6 +137,15 @@ class QuizStartScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatView()),
+          );
+        },
+        child: Image.asset('assets/images/chatbot.png'),
       ),
     );
   }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:speak_up/presentation/pages/test/question_liestening_view.dart';
 import 'package:speak_up/presentation/pages/test/question_reading_view.dart';
-import 'package:speak_up/presentation/pages/test/question_speaking_view%20copy.dart';
-import 'package:speak_up/presentation/pages/test/question_writing_view%20.dart';
+import 'package:speak_up/presentation/pages/test/question_speaking_view.dart';
+ import 'package:speak_up/presentation/pages/test/question_writing_view%20.dart';
 
 class SkillDetailPage extends StatefulWidget {
   final String skillName;
@@ -149,10 +149,10 @@ class StartTestPage extends StatelessWidget {
                         return TestQuestionReadingPage(
                             skillName: skillName, level: level);
                       } else if (skillName == 'Speaking') {
-                        return TestQuestionspeakingPage(
+                        return IELTSSpeakingTestPage(
                             skillName: skillName, level: level);
                       } else {
-                        return TestQuestionwritingPage(
+                        return WritingTestPage(
                             skillName: skillName, level: level);
                       }
                     },

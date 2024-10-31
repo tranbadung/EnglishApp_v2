@@ -7,25 +7,57 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:speak_up/data/providers/app_language_provider.dart';
 import 'package:speak_up/data/providers/app_navigator_provider.dart';
 import 'package:speak_up/data/providers/app_theme_provider.dart';
+import 'package:speak_up/data/repositories/firestore/firestore_repository.dart';
 import 'package:speak_up/domain/use_cases/account_settings/get_app_theme_use_case.dart';
 import 'package:speak_up/domain/use_cases/account_settings/save_app_language_use_case.dart';
 import 'package:speak_up/domain/use_cases/account_settings/switch_app_theme_use_case.dart';
 import 'package:speak_up/domain/use_cases/authentication/sign_out_use_case.dart';
 import 'package:speak_up/injection/injector.dart';
 import 'package:speak_up/presentation/navigation/app_routes.dart';
-import 'package:speak_up/presentation/pages/edit_profile/edit_profile_view.dart';
-import 'package:speak_up/presentation/pages/main_menu/main_menu_view.dart';
+import 'package:speak_up/presentation/pages/chat/chat_view.dart';
 import 'package:speak_up/presentation/pages/profile/profile_state.dart';
 import 'package:speak_up/presentation/pages/profile/profile_view_model.dart';
 import 'package:speak_up/presentation/resources/app_icons.dart';
 import 'package:speak_up/presentation/resources/app_images.dart';
 import 'package:speak_up/presentation/utilities/enums/language.dart';
-import 'package:speak_up/presentation/widgets/buttons/app_back_button.dart';
 import 'package:speak_up/presentation/widgets/loading_indicator/app_loading_indicator.dart';
 
-class ProgressTrackingScreen extends StatelessWidget {
+import 'package:speak_up/data/repositories/local_database/local_dtb.dart';
+
+ class ActivityViewModel extends StateNotifier<List<String>> {
+  final UserActivityManager _userActivityManager;
+
+  ActivityViewModel(this._userActivityManager) : super([]);
+
+  Future<void> recordActivity() async {
+    await _userActivityManager.recordUserActivity();
+    await fetchUserActivity();
+  }
+
+  Future<void> fetchUserActivity() async {
+    final activityData = await _userActivityManager.getUserActivity();
+    List<String> activities = [
+      'Số ngày truy cập: ${activityData['daysVisited']}',
+      'Tổng số giờ học hiện tại: ${activityData['totalHours']}',
+    ];
+    state = activities;
+  }
+}
+
+ final activityViewModelProvider =
+    StateNotifierProvider<ActivityViewModel, List<String>>((ref) {
+  final firestoreRepository = FirestoreRepository(FirebaseFirestore.instance);
+  return ActivityViewModel(UserActivityManager(firestoreRepository));
+});
+
+
+class ProgressTrackingScreen extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.read(activityViewModelProvider.notifier).recordActivity();
+
+    final userActivities = ref.watch(activityViewModelProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -37,15 +69,14 @@ class ProgressTrackingScreen extends StatelessWidget {
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
         actions: [
-          InkWell(
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => ProfileView()));
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfileView()),
+              );
             },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(Icons.settings), //
-            ),
           ),
         ],
       ),
@@ -55,34 +86,35 @@ class ProgressTrackingScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Theo dõi tiến độ luyện tập cùng ELSA!',
+              'Theo dõi tiến độ luyện tập!',
               style: TextStyle(
                   color: Colors.black,
                   fontSize: 18,
                   fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 20),
-            _buildTimeSelector(),
+             SizedBox(height: 20),
+            _buildStatsRow(userActivities),
             SizedBox(height: 20),
-            _buildStatsRow(),
-            SizedBox(height: 20),
-            _buildCalendar(),
-            Spacer(),
-            // _buildProgressCircle(),
+             SizedBox(height: 20),
+            Text(
+              'Hoạt động gần đây:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            _buildUserActivities(userActivities),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTimeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildTimeOption('7 ngày qua', isSelected: true),
-        SizedBox(width: 10),
-        _buildTimeOption('12 tháng qua', isSelected: false),
-      ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatView()),
+          );
+        },
+        child: Image.asset('assets/images/chatbot.png'),
+      ),
     );
   }
 
@@ -104,14 +136,30 @@ class ProgressTrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(List<String> userActivities) {
+    int numberOfDays = userActivities.length;
+
+    int totalHours = userActivities.fold(0, (sum, activity) {
+      return sum + _getHoursFromActivity(activity);
+    });
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildStatCard('0', 'BÀI HỌC ĐÃ HOÀN THÀNH', Colors.blue[300]!),
-        _buildStatCard('0', 'SỐ PHÚT LUYỆN TẬP', Colors.orange[300]!),
+        _buildStatCard(
+            numberOfDays.toString(), 'Số ngày duy trì', Colors.blue[300]!),
+        _buildStatCard(
+            totalHours.toString(), 'Số giờ đã học', Colors.orange[300]!),
       ],
     );
+  }
+
+  int _getHoursFromActivity(String activity) {
+    List<String> parts = activity.split(':');
+    if (parts.length > 1) {
+      return int.tryParse(parts[1].trim()) ?? 0;
+    }
+    return 0;
   }
 
   Widget _buildStatCard(String value, String title, Color color) {
@@ -178,24 +226,20 @@ class ProgressTrackingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressCircle() {
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.purple[400],
-        ),
-        child: Center(
-          child: Text(
-            '0/5',
-            style: TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+  Widget _buildUserActivities(List<String> activities) {
+    if (activities.isEmpty) {
+      return Text('Không có hoạt động nào trong thời gian gần đây.');
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: activities.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(activities[index]),
+          leading: Icon(Icons.check_circle, color: Colors.green),
+        );
+      },
     );
   }
 }
@@ -329,8 +373,7 @@ class ProfileViewState extends ConsumerState<ProfileView> {
         ref.read(appLanguageProvider.notifier).state = Language.vietnamese;
         break;
       case null:
-        // dialog dismissed
-        break;
+         break;
     }
     injector
         .get<SaveAppLanguageUseCase>()

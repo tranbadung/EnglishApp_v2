@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "279938469762-hln753divvrvd30qr9lumfna18fa8g2p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tansangle.speak_up_flutter",
+            "certificate_hash": "f24c86cdf55c4637b4afe5ec0d18c8d2a75236bd"
+          }
+        },
+        {
           "client_id": "279938469762-a91oojs63epjq3gg3aquifg5n0ddsie4.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "279938469762-a91oojs63epjq3gg3aquifg5n0ddsie4.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "279938469762-22ge5hf76jca4u08vjnne3jkborkkm3h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tansangle.speakUpFlutter"
+              }
             }
           ]
         }

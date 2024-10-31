@@ -32,6 +32,8 @@ import 'package:speak_up/presentation/utilities/enums/language.dart';
 import 'package:speak_up/presentation/utilities/enums/loading_status.dart';
 import 'package:path/path.dart' as path;
 
+import '../../../data/models/test.dart';
+
 final homeViewModelProvider =
     StateNotifierProvider.autoDispose<HomeViewModel, HomeState>(
         (ref) => HomeViewModel(
@@ -52,10 +54,10 @@ class HomeView extends ConsumerStatefulWidget {
 class _HomeViewState extends ConsumerState<HomeView> {
   HomeViewModel get _viewModel => ref.read(homeViewModelProvider.notifier);
   Future<void> _init() async {
-    if (!mounted) return; // Kiểm tra widget đã được gắn vào cây hay chưa
+    if (!mounted) return;
 
     await _viewModel.getCategoryList();
-    if (!mounted) return; // Kiểm tra lại sau mỗi hành động không đồng bộ
+    if (!mounted) return;
     await _viewModel.getLessonList();
     if (!mounted) return;
     await _viewModel.getFlashCardList();
@@ -84,18 +86,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
     super.initState();
     Future.delayed(Duration.zero, () async {
       await _init();
-      // Sử dụng addPostFrameCallback để đảm bảo widget đã được xây dựng
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _bannerTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
-          if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
-
+          if (!mounted) return;
           if (_currentBannerPage < 2) {
             _currentBannerPage++;
           } else {
             _currentBannerPage = 0;
           }
 
-          // Chỉ thực hiện animate khi widget còn tồn tại
           if (_bannerController.hasClients) {
             _bannerController.animateToPage(
               _currentBannerPage,
@@ -110,19 +109,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   @override
   void dispose() {
-    _bannerTimer?.cancel(); // Hủy Timer khi widget bị dispose
-    _bannerController.dispose(); // Hủy bỏ controller để tránh lỗi
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeViewModelProvider);
-    final reelsState =
-        ref.watch(reelsViewModelProvider); // This will get the current state
-
-    print(
-        'Local videos in HomeView: ${state.localVideos}'); // Log danh sách video ở HomeView
+    final reelsState = ref.watch(reelsViewModelProvider);
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -130,12 +125,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
           children: [
             buildAppBar(),
             buildBanner(),
-            // buildCategories(state),
-            // buildExplore(state),
             buildConversations(state),
-            // buildFlashCards(state),
-            buildReels(reelsState), // Pass ReelsState to buildReels
-            buildSkillsEvaluationTable(),
+            buildReels(reelsState),
           ],
         ),
       ),
@@ -206,8 +197,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 
   Widget buildReels(ReelsState reelsState) {
-    print('Local videos: ${reelsState.localVideos}');
-
     Future<bool> checkAssetExists(String assetPath) async {
       try {
         await rootBundle.load(assetPath);
@@ -522,8 +511,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
         ),
         state.categoriesLoadingStatus == LoadingStatus.success
             ? SizedBox(
-                height: ScreenUtil().screenHeight *
-                    0.4, // Điều chỉnh chiều cao tương đối
+                height: ScreenUtil().screenHeight * 0.4,
                 child: ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   scrollDirection: Axis.horizontal,
@@ -550,8 +538,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             .navigateTo(AppRoutes.category, arguments: category);
       },
       child: Container(
-        width:
-            ScreenUtil().screenWidth * 0.7, // Điều chỉnh chiều rộng tương đối
+        width: ScreenUtil().screenWidth * 0.7,
         margin: EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: isDarkTheme ? Colors.grey[800] : Colors.white,
@@ -644,14 +631,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 
-// You might need to define these somewhere in your code
-  final List<String> conversationImages = [
-    'assets/images/fitness.jpg',
-    'assets/images/cooking.jpg',
-    'assets/images/account.jpg',
-    // Add more image paths as needed
-  ];
-
   Widget buildExplore(HomeState state) {
     return Column(
       children: [
@@ -695,8 +674,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
           child: state.lessonsLoadingStatus == LoadingStatus.success
               ? PageView.builder(
                   itemCount: state.lessons.length,
-                  controller: PageController(
-                      viewportFraction: 0.9), // Điều chỉnh viewportFraction
+                  controller: PageController(viewportFraction: 0.9),
                   itemBuilder: (context, index) =>
                       buildExploreItem(state.lessons[index]),
                 )
@@ -717,7 +695,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             .navigateTo(AppRoutes.lesson, arguments: lesson);
       },
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 8), // Khoảng cách
+        margin: EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
@@ -828,7 +806,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   Widget buildCategories(HomeState state) {
     final categories = state.categories;
-    final maxVisibleCategories = 10; // Số lượng phần tử hiển thị tối đa
+    final maxVisibleCategories = 10;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -901,7 +879,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                             ),
                             child: Center(
                               child: Text(
-                                "More", // Dấu "..." để mở rộng
+                                "More",
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -967,18 +945,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 
   Widget buildBanner() {
-    const String _imagesPath = 'assets/images';
-
-    final List<String> imagePaths = [
-      '$_imagesPath/banner.png',
-      '$_imagesPath/banner1.png',
-      '$_imagesPath/banner2.png',
-      '$_imagesPath/banner3.png',
-      '$_imagesPath/banner4.png',
-    ];
-
     return SizedBox(
-      height: MediaQuery.of(context).size.height / 4, // Full screen height
+      height: MediaQuery.of(context).size.height / 4,
       child: PageView.builder(
         controller: _bannerController,
         itemCount: imagePaths.length,
@@ -986,17 +954,16 @@ class _HomeViewState extends ConsumerState<HomeView> {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(25), // Đã bo đều các góc
+              borderRadius: BorderRadius.circular(25),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.circular(25), // Bo đều góc bên trong
+                  borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 8,
                       spreadRadius: 1,
-                      offset: Offset(0, 4), // Tạo hiệu ứng đổ bóng
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),

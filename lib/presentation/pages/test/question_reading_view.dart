@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
 import 'package:speak_up/presentation/pages/lesson/lessonview.dart';
 
+import '../../../data/models/test.dart';
+
 class TestQuestionReadingPage extends StatefulWidget {
   final String skillName;
   final String level;
@@ -23,28 +25,10 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
       List.generate(7, (index) => TextEditingController());
   final List<String?> _selectedAnswers = List.filled(6, null);
   Timer? _timer;
-  Duration _timeRemaining = Duration(minutes: 20);
+  Duration _timeRemaining = const Duration(minutes: 20);
   bool _isTestSubmitted = false;
   int _score = 0;
-
-  final Map<int, String> correctAnswers = {
-    0: 'B',
-    1: 'C',
-    2: 'F',
-    3: 'D',
-    4: 'E',
-    5: 'A',
-  };
-
-  final Map<int, String> correctSummaryAnswers = {
-    0: 'safety',
-    1: 'traffic',
-    2: 'road',
-    3: 'mobile',
-    4: 'dangerous',
-    5: 'communities',
-    6: 'efficient',
-  };
+ 
 
   @override
   void initState() {
@@ -53,10 +37,10 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
   }
 
   void startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_timeRemaining.inSeconds > 0) {
-          _timeRemaining = _timeRemaining - Duration(seconds: 1);
+          _timeRemaining = _timeRemaining - const Duration(seconds: 1);
         } else {
           submitTest();
         }
@@ -73,7 +57,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
 
   Widget _buildTimerDisplay() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color:
             _timeRemaining.inMinutes < 5 ? Colors.red[100] : Colors.blue[100],
@@ -86,7 +70,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
             Icons.timer,
             color: _timeRemaining.inMinutes < 5 ? Colors.red : Colors.blue,
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             'Time remaining: ${_formatDuration(_timeRemaining)}',
             style: TextStyle(
@@ -108,7 +92,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
         _controllers.where((controller) => controller.text.isNotEmpty).length;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.green[100],
         borderRadius: BorderRadius.circular(8),
@@ -116,11 +100,11 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.question_answer, color: Colors.green),
-          SizedBox(width: 8),
+          const Icon(Icons.question_answer, color: Colors.green),
+          const SizedBox(width: 8),
           Text(
             'Questions: $answeredQuestions/$totalQuestions',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.green,
@@ -135,15 +119,13 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
     _timer?.cancel();
     int totalScore = 0;
 
-    // Check multiple choice answers
-    for (int i = 0; i < _selectedAnswers.length; i++) {
+     for (int i = 0; i < _selectedAnswers.length; i++) {
       if (_selectedAnswers[i] == correctAnswers[i]) {
         totalScore++;
       }
     }
 
-    // Check summary completion answers
-    for (int i = 0; i < _controllers.length; i++) {
+     for (int i = 0; i < _controllers.length; i++) {
       if (_controllers[i].text.toLowerCase().trim() ==
           correctSummaryAnswers[i]!.toLowerCase()) {
         totalScore++;
@@ -166,31 +148,30 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
     double percentage = (_score / totalQuestions) * 100;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Test Results')),
+      appBar: AppBar(title: const Text('Test Results')),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Score Card
-            Card(
-              margin: EdgeInsets.all(16),
+             Card(
+              margin: const EdgeInsets.all(16),
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       'Test Completed!',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 16),
-                    Text(
+                    const SizedBox(height: 16),
+                    const Text(
                       'Your Score:',
                       style: TextStyle(fontSize: 18),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       '$_score/$totalQuestions',
                       style: TextStyle(
@@ -205,28 +186,27 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                     ),
                     Text(
                       '${percentage.toStringAsFixed(1)}%',
-                      style: TextStyle(fontSize: 24, color: Colors.grey),
+                      style: const TextStyle(fontSize: 24, color: Colors.grey),
                     ),
                   ],
                 ),
               ),
             ),
-            // Multiple Choice Answers
-            Card(
-              margin: EdgeInsets.all(16),
+             Card(
+              margin: const EdgeInsets.all(16),
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Multiple Choice Answers:',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ...List.generate(_selectedAnswers.length, (index) {
                       String userAnswer =
                           _selectedAnswers[index] ?? 'No answer';
@@ -234,16 +214,16 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                       bool isCorrect = userAnswer == correctAnswer;
 
                       return Padding(
-                        padding: EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.only(bottom: 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Question ${index + 1}',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
                             Row(
                               children: [
                                 Text('Your answer: $userAnswer'),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Icon(
                                   isCorrect ? Icons.check_circle : Icons.cancel,
                                   color: isCorrect ? Colors.green : Colors.red,
@@ -252,8 +232,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                               ],
                             ),
                             Text('Correct answer: $correctAnswer',
-                                style: TextStyle(color: Colors.green)),
-                            Divider(),
+                                style: const TextStyle(color: Colors.green)),
+                            const Divider(),
                           ],
                         ),
                       );
@@ -262,22 +242,21 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                 ),
               ),
             ),
-            // Summary Completion Answers
-            Card(
-              margin: EdgeInsets.all(16),
+             Card(
+              margin: const EdgeInsets.all(16),
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Summary Completion Answers:',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ...List.generate(_controllers.length, (index) {
                       String userAnswer =
                           _controllers[index].text.toLowerCase().trim();
@@ -286,16 +265,16 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                           userAnswer == correctAnswer.toLowerCase();
 
                       return Padding(
-                        padding: EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.only(bottom: 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Question ${index + 7}',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
                             Row(
                               children: [
                                 Text('Your answer: $userAnswer'),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Icon(
                                   isCorrect ? Icons.check_circle : Icons.cancel,
                                   color: isCorrect ? Colors.green : Colors.red,
@@ -304,8 +283,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                               ],
                             ),
                             Text('Correct answer: $correctAnswer',
-                                style: TextStyle(color: Colors.green)),
-                            Divider(),
+                                style: const TextStyle(color: Colors.green)),
+                            const Divider(),
                           ],
                         ),
                       );
@@ -317,11 +296,11 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
             ElevatedButton(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => LessonView1()));
+                    MaterialPageRoute(builder: (context) => const LessonView1()));
               },
-              child: Text('Back to Home'),
+              child: const Text('Back to Home'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -329,9 +308,9 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
   }
 
   Widget buildReadingPassage() {
-    return SingleChildScrollView(
+    return const SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -398,7 +377,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
         ),
         ListView.builder(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: questions.length,
           itemBuilder: (context, index) {
             return Card(
@@ -456,8 +435,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
+        const Padding(
+          padding: EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -530,7 +509,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
         ),
         ListView.builder(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: 7,
           itemBuilder: (context, index) {
             return Padding(
@@ -539,7 +518,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                 controller: _controllers[index],
                 decoration: InputDecoration(
                   labelText: 'Answer ${index + 7}',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   enabled: !_isTestSubmitted,
                 ),
               ),
@@ -554,7 +533,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('IELTS Reading Test'),
+        title: const Text('IELTS Reading Test'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -583,7 +562,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle_outline),
+                    const Icon(Icons.check_circle_outline),
                     SizedBox(width: 8.w),
                     Text(
                       'Submit Test',
