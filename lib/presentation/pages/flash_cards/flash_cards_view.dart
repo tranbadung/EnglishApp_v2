@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,7 +49,7 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
   Future<void> _init() async {
     flashCards =
         ModalRoute.of(context)?.settings.arguments as List<FlashCard>? ??
-            getSampleFlashCards();
+            getSampleFlashCards;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _viewModel.init(flashCards[0].frontText);
@@ -58,6 +59,14 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
 
   @override
   Widget build(BuildContext context) {
+    // Khởi tạo ScreenUtil với điều kiện cho web và mobile
+    if (kIsWeb) {
+      ScreenUtil.init(context,
+          designSize: const Size(1920, 1080)); // Kích thước thiết kế cho web
+    } else {
+      ScreenUtil.init(context,
+          designSize: const Size(375, 812)); // Kích thước thiết kế cho mobile
+    }
     final state = ref.watch(flashCardsViewModelProvider);
     ref.listen(
         flashCardsViewModelProvider.select((value) => value.currentIndex),
@@ -91,6 +100,8 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
 
   Widget buildLoadingSuccessBody(FlashCardsState state, BuildContext context) {
     final viewModel = ref.read(flashCardsViewModelProvider.notifier);
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Stack(
       children: [
         Positioned.fill(
@@ -137,16 +148,14 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
         ),
         Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Flexible(child: Container()),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Flexible(child: Container()),
                   InkWell(
                     onTap: () {
-                      if (state.isAnimating) {
-                        return;
-                      }
+                      if (state.isAnimating) return;
                       viewModel.updateAnimating(true);
                       Future.delayed(const Duration(milliseconds: 1000), () {
                         viewModel.updateAnimating(false);
@@ -157,7 +166,9 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
                       );
                     },
                     child: Container(
-                      width: ScreenUtil().screenWidth * 0.35,
+                      width: kIsWeb
+                          ? screenWidth * 0.4
+                          : screenWidth * 0.35, // Thay đổi kích thước cho web
                       padding: EdgeInsets.symmetric(
                         vertical: ScreenUtil().setHeight(16),
                       ),
@@ -172,24 +183,20 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
                         color: Colors.white,
                       ),
                       child: Center(
-                          child: Text(
-                        AppLocalizations.of(context)!.reviewLater,
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontSize: ScreenUtil().setSp(16),
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          AppLocalizations.of(context)!.reviewLater,
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontSize: ScreenUtil().setSp(16),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      )),
+                      ),
                     ),
-                  ),
-                  const SizedBox(
-                    width: 16,
                   ),
                   InkWell(
                     onTap: () {
-                      if (state.isAnimating) {
-                        return;
-                      }
+                      if (state.isAnimating) return;
                       viewModel.updateAnimating(true);
                       Future.delayed(const Duration(milliseconds: 1000), () {
                         viewModel.updateAnimating(false);
@@ -200,7 +207,9 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
                       );
                     },
                     child: Container(
-                      width: ScreenUtil().screenWidth * 0.35,
+                      width: kIsWeb
+                          ? screenWidth * 0.4
+                          : screenWidth * 0.35, // Thay đổi kích thước cho web
                       padding: EdgeInsets.symmetric(
                         vertical: ScreenUtil().setHeight(16),
                       ),
@@ -212,22 +221,20 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
                         color: Theme.of(context).primaryColor,
                       ),
                       child: Center(
-                          child: Text(
-                        AppLocalizations.of(context)!.iGotIt,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: ScreenUtil().setSp(16),
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          AppLocalizations.of(context)!.iGotIt,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: ScreenUtil().setSp(16),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      )),
+                      ),
                     ),
                   ),
-                  Flexible(child: Container()),
                 ],
               ),
-              const SizedBox(
-                height: 32,
-              ),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -291,27 +298,31 @@ class _FlashCardsViewState extends ConsumerState<FlashCardsView> {
   Widget buildCurrentFlashCardItem(FlashCardsState state, int index) {
     return Padding(
       padding: EdgeInsets.only(
-          top: ScreenUtil().screenHeight * 0.1,
-          left: 16,
-          right: 16,
-          bottom: ScreenUtil().screenHeight * 0.2),
+        top: ScreenUtil().screenHeight *
+            (kIsWeb ? 0.00005 : 0.1), // Điều chỉnh padding trên web
+        left: 16,
+        right: 16,
+        bottom: ScreenUtil().screenHeight *
+            (kIsWeb ? 0.1 : 0.2), // Điều chỉnh padding dưới cùng trên web
+      ),
       child: FlashCardItem(
-          flashCardSize: FlashCardSize.large,
-          frontText: flashCards[index].frontText,
-          backText: flashCards[index].backText,
-          tapFrontDescription: AppLocalizations.of(context)!.tapToSeeTheMeaning,
-          tapBackDescription: AppLocalizations.of(context)!.tapToReturn,
-          backTranslation: flashCards[index].backTranslation ?? '',
-          onPressedFrontCard: () {
-            ref
-                .read(flashCardsViewModelProvider.notifier)
-                .speakFromText(flashCards[index].frontText);
-          },
-          onPressedBackCard: () {
-            ref
-                .read(flashCardsViewModelProvider.notifier)
-                .speakFromText(flashCards[index].backText);
-          }),
+        flashCardSize: FlashCardSize.large,
+        frontText: flashCards[index].frontText,
+        backText: flashCards[index].backText,
+        tapFrontDescription: AppLocalizations.of(context)!.tapToSeeTheMeaning,
+        tapBackDescription: AppLocalizations.of(context)!.tapToReturn,
+        backTranslation: flashCards[index].backTranslation ?? '',
+        onPressedFrontCard: () {
+          ref
+              .read(flashCardsViewModelProvider.notifier)
+              .speakFromText(flashCards[index].frontText);
+        },
+        onPressedBackCard: () {
+          ref
+              .read(flashCardsViewModelProvider.notifier)
+              .speakFromText(flashCards[index].backText);
+        },
+      ),
     );
   }
 }

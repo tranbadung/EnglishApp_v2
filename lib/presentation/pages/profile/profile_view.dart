@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +25,7 @@ import 'package:speak_up/presentation/widgets/loading_indicator/app_loading_indi
 
 import 'package:speak_up/data/repositories/local_database/local_dtb.dart';
 
- class ActivityViewModel extends StateNotifier<List<String>> {
+class ActivityViewModel extends StateNotifier<List<String>> {
   final UserActivityManager _userActivityManager;
 
   ActivityViewModel(this._userActivityManager) : super([]);
@@ -37,210 +38,278 @@ import 'package:speak_up/data/repositories/local_database/local_dtb.dart';
   Future<void> fetchUserActivity() async {
     final activityData = await _userActivityManager.getUserActivity();
     List<String> activities = [
-      'Số ngày truy cập: ${activityData['daysVisited']}',
-      'Tổng số giờ học hiện tại: ${activityData['totalHours']}',
+      'Số ngày truy cập: ${activityData['studyStreak']}',
+      'Tổng số giờ học hôm nay: ${activityData['todayStudyHours']}',
+      'Ngày đăng nhập gần nhất: ${activityData['accessDates']}',
     ];
     state = activities;
+    print(state);
   }
 }
 
- final activityViewModelProvider =
+final activityViewModelProvider =
     StateNotifierProvider<ActivityViewModel, List<String>>((ref) {
   final firestoreRepository = FirestoreRepository(FirebaseFirestore.instance);
   return ActivityViewModel(UserActivityManager(firestoreRepository));
 });
 
-
 class ProgressTrackingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.read(activityViewModelProvider.notifier).recordActivity();
+    final viewModel = ref.read(activityViewModelProvider.notifier);
 
-    final userActivities = ref.watch(activityViewModelProvider);
+    return FutureBuilder(
+      future: viewModel.recordActivity(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-    return Scaffold(
+        final userActivities = ref.watch(activityViewModelProvider);
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: _buildAppBar(context),
+          body: _buildBody(context, userActivities),
+        );
+      },
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      title: Text(
+        'Hoạt động',
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+      ),
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Hoạt động',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.black),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileView()),
+            );
+          },
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileView()),
-              );
-            },
+      ],
+    );
+  }
+
+  Widget _buildBody(BuildContext context, List<String> userActivities) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          SizedBox(height: 20),
+          _buildStatsRow(userActivities),
+          SizedBox(height: 20),
+          _buildRecentActivities(userActivities),
+          SizedBox(
+            height: 20,
           ),
+          _buildDayBoxes(todayIndex),
         ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Theo dõi tiến độ luyện tập!',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 20),
-             SizedBox(height: 20),
-            _buildStatsRow(userActivities),
-            SizedBox(height: 20),
-             SizedBox(height: 20),
-            Text(
-              'Hoạt động gần đây:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            _buildUserActivities(userActivities),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatView()),
-          );
-        },
-        child: Image.asset('assets/images/chatbot.png'),
       ),
     );
   }
 
-  Widget _buildTimeOption(String title, {bool isSelected = false}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.purple[300] : Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.purple[300]!),
-      ),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.black,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
+  Widget _buildHeader() {
+    return Text(
+      'Theo dõi tiến độ luyện tập!',
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
 
   Widget _buildStatsRow(List<String> userActivities) {
-    int numberOfDays = userActivities.length;
+    // Assuming userActivities contains specific strings, parse the hours and days
+    String daysText = userActivities.firstWhere(
+        (activity) => activity.contains("Số ngày truy cập"),
+        orElse: () => "0");
+    String hoursText = userActivities.firstWhere(
+        (activity) => activity.contains("Tổng số giờ học hôm nay"),
+        orElse: () => "0");
 
-    int totalHours = userActivities.fold(0, (sum, activity) {
-      return sum + _getHoursFromActivity(activity);
-    });
+    final days =
+        int.tryParse(RegExp(r'\d+').firstMatch(daysText)?.group(0) ?? "0") ?? 0;
+    final hours =
+        int.tryParse(RegExp(r'\d+').firstMatch(hoursText)?.group(0) ?? "0") ??
+            0;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
+        _buildStatCard(days.toString(), 'Số ngày duy trì', Colors.blue[300]!),
         _buildStatCard(
-            numberOfDays.toString(), 'Số ngày duy trì', Colors.blue[300]!),
-        _buildStatCard(
-            totalHours.toString(), 'Số giờ đã học', Colors.orange[300]!),
+            hours.toString(), 'Số phút đã học hôm nay', Colors.orange[300]!),
       ],
     );
   }
 
-  int _getHoursFromActivity(String activity) {
-    List<String> parts = activity.split(':');
-    if (parts.length > 1) {
-      return int.tryParse(parts[1].trim()) ?? 0;
-    }
-    return 0;
-  }
-
-  Widget _buildStatCard(String value, String title, Color color) {
+  Widget _buildStatCard(String value, String label, Color color) {
     return Container(
       width: 150,
-      height: 120,
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(15),
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             value,
             style: TextStyle(
-                color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 8),
           Text(
-            title,
+            label,
             textAlign: TextAlign.center,
             style: TextStyle(
-                color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+              fontSize: 14,
+              color: Colors.white,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCalendar() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Không có dữ liệu vì bạn vẫn chưa luyện tập trong 7 ngày qua',
-          style: TextStyle(color: Colors.black87, fontSize: 14),
+  Widget _buildRecentActivities(List<String> activities) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Hoạt động gần đây',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16),
+            activities.isEmpty
+                ? Text('Chưa có hoạt động nào.')
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: activities.length,
+                    separatorBuilder: (context, index) => Divider(),
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.green,
+                          child: Icon(Icons.check, color: Colors.white),
+                        ),
+                        title: Text(activities[index]),
+                      );
+                    },
+                  ),
+          ],
         ),
-        SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(7, (index) => _buildDayBox(index)),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildDayBox(int index) {
-    List<String> days = ['Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'CN'];
-    return Container(
-      width: 40,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.purple[300],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Center(
-        child: Text(
-          days[index],
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
-  }
+  // Widget _buildCalendar(List<String> activities) {
+  //   final hasActivities = activities.isNotEmpty;
 
-  Widget _buildUserActivities(List<String> activities) {
-    if (activities.isEmpty) {
-      return Text('Không có hoạt động nào trong thời gian gần đây.');
-    }
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: activities.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(activities[index]),
-          leading: Icon(Icons.check_circle, color: Colors.green),
+  //   return Card(
+  //     elevation: 4,
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //     child: Padding(
+  //       padding: EdgeInsets.all(16),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text(
+  //             'Lịch hoạt động',
+  //             style: TextStyle(
+  //               fontSize: 18,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //           SizedBox(height: 16),
+  //           if (!hasActivities)
+  //             Text(
+  //               'Bạn chưa có hoạt động nào trong 7 ngày qua',
+  //               style: TextStyle(color: Colors.grey),
+  //             ),
+  //           SizedBox(height: 8),
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: _buildDayBoxes(),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  int todayIndex =
+      DateTime.now().weekday % 7; // 0 for Sunday, 1 for Monday, etc.
+  Widget _buildDayBoxes(int loginDayIndex) {
+    final daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    return Row(
+      mainAxisAlignment:
+          kIsWeb ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
+      children: List.generate(7, (index) {
+        bool isToday = index == loginDayIndex;
+        return Expanded(
+          // Sử dụng Expanded để các phần tử tự động điều chỉnh kích thước
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: kIsWeb ? 10.0 : 2.0,
+            ),
+            child: Container(
+              height: kIsWeb ? 100 : 60,
+              decoration: BoxDecoration(
+                color: isToday ? Colors.purple[300] : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  daysOfWeek[index],
+                  style: TextStyle(
+                    color: isToday ? Colors.white : Colors.grey[600],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
-      },
+      }),
     );
+  }
+
+  int _getHoursFromActivity(String activity) {
+    final match = RegExp(r'(\d+) giờ').firstMatch(activity);
+    return int.parse(match?.group(1) ?? "0");
   }
 }
 
@@ -373,7 +442,7 @@ class ProfileViewState extends ConsumerState<ProfileView> {
         ref.read(appLanguageProvider.notifier).state = Language.vietnamese;
         break;
       case null:
-         break;
+        break;
     }
     injector
         .get<SaveAppLanguageUseCase>()
@@ -384,122 +453,145 @@ class ProfileViewState extends ConsumerState<ProfileView> {
   Widget build(BuildContext context) {
     final state = ref.watch(profileViewModelProvider);
     final user = FirebaseAuth.instance.currentUser;
+
+    // Sử dụng MediaQuery để xác định kích thước màn hình
+    final isWideScreen = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text(
+          AppLocalizations.of(context)!.accountSettings,
+          style: TextStyle(fontSize: ScreenUtil().setSp(16)),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await _buildLogoutDialogBuilder(context);
+            },
+            icon: Icon(
+              Icons.logout,
+              color: Colors.red,
+              size: ScreenUtil().setHeight(24),
+            ),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(isWideScreen
+                      ? 48.0
+                      : 32.0), // Thay đổi padding dựa trên kích thước màn hình
+                  child: CircleAvatar(
+                    radius: isWideScreen
+                        ? 48
+                        : ScreenUtil()
+                            .setHeight(24), // Thay đổi kích thước cho web
+                    child: ClipOval(
+                      child: user?.photoURL != null
+                          ? Image.network(user!.photoURL!)
+                          : AppImages.avatar(),
+                    ),
+                  ),
+                ),
+                Text(
+                  user?.displayName ?? '',
+                  style: TextStyle(
+                    fontSize: isWideScreen
+                        ? 32
+                        : ScreenUtil()
+                            .setSp(24.0), // Thay đổi kích thước cho web
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                buildOptionsSection(state, user,
+                    isWideScreen), // Phân tách để xử lý các tùy chọn
+              ],
+            ),
+          ),
+          if (state.isSigningOut) const AppLoadingIndicator(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildOptionsSection(
+      ProfileState state, User? user, bool isWideScreen) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        buildListTile(
+          AppIcons.avatar(
+              size: isWideScreen ? 64 : 48), // Kích thước cho biểu tượng
+          AppLocalizations.of(context)!.editProfile,
+          onTap: () {
+            ref.read(appNavigatorProvider).navigateTo(AppRoutes.editProfile);
+          },
+        ),
+        if (user?.providerData[0].providerId == 'password')
+          buildListTile(
+            AppIcons.changePassword(size: isWideScreen ? 64 : 48),
+            AppLocalizations.of(context)!.changePassword,
+            onTap: () {
+              ref
+                  .read(appNavigatorProvider)
+                  .navigateTo(AppRoutes.changePassword);
             },
           ),
-          title: Text(AppLocalizations.of(context)!.accountSettings,
-              style: TextStyle(
-                fontSize: ScreenUtil().setSp(16),
-              )),
-          actions: [
-            IconButton(
-              onPressed: () async {
-                await _buildLogoutDialogBuilder(context);
-              },
-              icon: Icon(Icons.logout,
-                  color: Colors.red, size: ScreenUtil().setHeight(24)),
-            ),
-          ],
+        buildListTile(
+          AppIcons.darkMode(size: isWideScreen ? 64 : 48),
+          AppLocalizations.of(context)!.darkMode,
+          trailing: Switch(
+            value: state.isDarkMode,
+            onChanged: (value) {
+              ref
+                  .read(profileViewModelProvider.notifier)
+                  .changeThemeData(value);
+              ref.read(themeProvider.notifier).state = value;
+            },
+          ),
         ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: CircleAvatar(
-                          radius: ScreenUtil().setHeight(24),
-                          child: ClipOval(
-                            child: user?.photoURL != null
-                                ? Image.network(user!.photoURL!)
-                                : AppImages.avatar(),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        user?.displayName ?? '',
-                        style: TextStyle(
-                          fontSize: ScreenUtil().setSp(24.0),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 32,
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      buildListTile(AppIcons.avatar(size: 48),
-                          AppLocalizations.of(context)!.editProfile, onTap: () {
-                        ref
-                            .read(appNavigatorProvider)
-                            .navigateTo(AppRoutes.editProfile);
-                      }),
-                      if (user?.providerData[0].providerId == 'password')
-                        buildListTile(AppIcons.changePassword(size: 48),
-                            AppLocalizations.of(context)!.changePassword,
-                            onTap: () {
-                          ref
-                              .read(appNavigatorProvider)
-                              .navigateTo(AppRoutes.changePassword);
-                        }),
-                      buildListTile(AppIcons.darkMode(size: 48),
-                          AppLocalizations.of(context)!.darkMode,
-                          trailing: Switch(
-                            value: state.isDarkMode,
-                            onChanged: (value) {
-                              ref
-                                  .read(profileViewModelProvider.notifier)
-                                  .changeThemeData(value);
-                              ref.read(themeProvider.notifier).state = value;
-                            },
-                          )),
-                      buildListTile(
-                        AppIcons.changeLanguage(size: 48),
-                        AppLocalizations.of(context)!.language,
-                        trailing:
-                            ref.watch(appLanguageProvider) == Language.english
-                                ? AppImages.usFlag()
-                                : AppImages.vnFlag(),
-                        onTap: () {
-                          _onTapChangeLanguage(ref);
-                          injector.get<SaveAppLanguageUseCase>().run(
-                              ref.read(appLanguageProvider.notifier).state);
-                        },
-                      ),
-                      buildListTile(AppIcons.about(size: 48),
-                          AppLocalizations.of(context)!.about, onTap: () {
-                        ref
-                            .read(appNavigatorProvider)
-                            .navigateTo(AppRoutes.about);
-                      }),
-                      buildListTile(
-                        AppIcons.logout(size: 46),
-                        AppLocalizations.of(context)!.logOut,
-                        onTap: () async {
-                          await _buildLogoutDialogBuilder(context);
-                        },
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-            if (state.isSigningOut) const AppLoadingIndicator(),
-          ],
-        ));
+        buildListTile(
+          AppIcons.changeLanguage(size: isWideScreen ? 64 : 48),
+          AppLocalizations.of(context)!.language,
+          trailing: ref.watch(appLanguageProvider) == Language.english
+              ? AppImages.usFlag()
+              : AppImages.vnFlag(),
+          onTap: () {
+            _onTapChangeLanguage(ref);
+            injector
+                .get<SaveAppLanguageUseCase>()
+                .run(ref.read(appLanguageProvider.notifier).state);
+          },
+        ),
+        buildListTile(
+          AppIcons.about(size: isWideScreen ? 64 : 48),
+          AppLocalizations.of(context)!.about,
+          onTap: () {
+            ref.read(appNavigatorProvider).navigateTo(AppRoutes.about);
+          },
+        ),
+        buildListTile(
+          AppIcons.logout(size: isWideScreen ? 64 : 46),
+          AppLocalizations.of(context)!.logOut,
+          onTap: () async {
+            await _buildLogoutDialogBuilder(context);
+          },
+        ),
+      ],
+    );
   }
 
   Widget buildListTile(Widget icon, String title,
@@ -521,10 +613,7 @@ class ProfileViewState extends ConsumerState<ProfileView> {
           ),
         ),
         onTap: onTap,
-        trailing: trailing ??
-            const Icon(
-              Icons.arrow_forward_ios_outlined,
-            ),
+        trailing: trailing ?? const Icon(Icons.arrow_forward_ios_outlined),
       ),
     );
   }

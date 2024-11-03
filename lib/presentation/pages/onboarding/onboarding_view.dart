@@ -1,4 +1,5 @@
 import 'package:dots_indicator/dots_indicator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,7 +88,9 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
             ],
           ),
           SizedBox(
-            height: ScreenUtil().screenHeight * 0.5,
+            height: kIsWeb
+                ? ScreenUtil().screenHeight * 0.5
+                : ScreenUtil().screenHeight * 0.5,
             child: PageView.builder(
                 itemCount: 3,
                 controller: _pageController,
@@ -99,7 +102,11 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
                 }),
           ),
           Flexible(
-            child: Container(),
+            child: kIsWeb
+                ? Container(
+                    height: 10,
+                  )
+                : Container(),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -117,7 +124,8 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
             ),
           ),
           CustomButton(
-              height: 60,
+              height: kIsWeb ? 40 : 80,
+              width: kIsWeb ? 400 : 300,
               text: AppLocalizations.of(context)!.getStarted,
               onTap: () {
                 ref.read(appNavigatorProvider).navigateTo(

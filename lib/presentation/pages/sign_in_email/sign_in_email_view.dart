@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,104 +79,123 @@ class _SignInEmailViewState extends ConsumerState<SignInEmailView> {
     final state = ref.watch(signInEmailViewModelProvider);
     addFetchDataListener();
     addErrorMessageListener(context);
+
     return Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          leading: const AppBackButton(),
-        ),
-        body: Stack(
-          children: [
-            Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    AppImages.signInEmail(
-                        width: ScreenUtil().screenWidth * 0.4,
-                        boxFit: BoxFit.fitWidth),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 30),
-                          child: Text(
-                            AppLocalizations.of(context)!.signInWithYourEmail,
-                            style: TextStyle(
-                              fontSize: ScreenUtil().setSp(24),
-                              fontWeight: FontWeight.bold,
-                            ),
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        leading: const AppBackButton(),
+      ),
+      body: Stack(
+        children: [
+          Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  AppImages.signInEmail(
+                    width: kIsWeb
+                        ? ScreenUtil().screenWidth * 0.25
+                        : ScreenUtil().screenWidth * 0.4,
+                    boxFit: BoxFit.fitWidth,
+                  ),
+                  Row(
+                    mainAxisAlignment: kIsWeb
+                        ? MainAxisAlignment.center
+                        : MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16, horizontal: 30),
+                        child: Text(
+                          AppLocalizations.of(context)!.signInWithYourEmail,
+                          style: TextStyle(
+                            fontSize: kIsWeb
+                                ? ScreenUtil().setSp(20)
+                                : ScreenUtil().setSp(24),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  CustomTextField(
+                    aboveText: AppLocalizations.of(context)!.emailAddress,
+                    hintText: AppLocalizations.of(context)!.enterYourEmail,
+                    suffixIcon: const Icon(Icons.email),
+                    keyboardType: TextInputType.emailAddress,
+                    controller: _emailTextEditingController,
+                    validatorType: ValidatorType.email,
+                    context: context,
+                  ),
+                  CustomTextField(
+                    aboveText: AppLocalizations.of(context)!.password,
+                    hintText: AppLocalizations.of(context)!.enterYourPassword,
+                    keyboardType: TextInputType.visiblePassword,
+                    controller: _passwordTextEditingController,
+                    errorMaxLines: 2,
+                    validatorType: ValidatorType.password,
+                    context: context,
+                    obscureText: !state.isPasswordVisible,
+                    onSuffixIconTap: () {
+                      ref
+                          .read(signInEmailViewModelProvider.notifier)
+                          .onPasswordVisibilityPressed();
+                    },
+                    suffixIcon: Icon(state.isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                  ),
+                  CustomButton(
+                    marginVertical: 30,
+                    text: AppLocalizations.of(context)!.signIn,
+                    buttonState: state.loadingStatus.buttonState,
+                    onTap: () {
+                      if (!_formKey.currentState!.validate()) return;
+                      ref
+                          .read(signInEmailViewModelProvider.notifier)
+                          .onSignInButtonPressed(
+                              _emailTextEditingController.text,
+                              _passwordTextEditingController.text);
+                    },
+                    height: kIsWeb
+                        ? ScreenUtil().setHeight(56)
+                        : ScreenUtil().setHeight(56),
+                    width: kIsWeb
+                        ? ScreenUtil().setWidth(200)
+                        : ScreenUtil().setWidth(200),
+                  ),
+                  SizedBox(
+                    height: ScreenUtil().setHeight(32),
+                  ),
+                  Text(
+                    AppLocalizations.of(context)!.dontHaveAnAccount,
+                    style: TextStyle(
+                      fontSize: ScreenUtil().setSp(16),
                     ),
-                    CustomTextField(
-                      aboveText: AppLocalizations.of(context)!.emailAddress,
-                      hintText: AppLocalizations.of(context)!.enterYourEmail,
-                      suffixIcon: const Icon(Icons.email),
-                      keyboardType: TextInputType.emailAddress,
-                      controller: _emailTextEditingController,
-                      validatorType: ValidatorType.email,
-                      context: context,
-                    ),
-                    CustomTextField(
-                      aboveText: AppLocalizations.of(context)!.password,
-                      hintText: AppLocalizations.of(context)!.enterYourPassword,
-                      keyboardType: TextInputType.visiblePassword,
-                      controller: _passwordTextEditingController,
-                      errorMaxLines: 2,
-                      validatorType: ValidatorType.password,
-                      context: context,
-                      obscureText: !state.isPasswordVisible,
-                      onSuffixIconTap: () {
-                        ref
-                            .read(signInEmailViewModelProvider.notifier)
-                            .onPasswordVisibilityPressed();
-                      },
-                      suffixIcon: Icon(state.isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off),
-                    ),
-                    CustomButton(
-                        marginVertical: 30,
-                        text: AppLocalizations.of(context)!.signIn,
-                        buttonState: state.loadingStatus.buttonState,
-                        onTap: () {
-                          if (!_formKey.currentState!.validate()) return;
-                          ref
-                              .read(signInEmailViewModelProvider.notifier)
-                              .onSignInButtonPressed(
-                                  _emailTextEditingController.text,
-                                  _passwordTextEditingController.text);
-                        }),
-                    SizedBox(
-                      height: ScreenUtil().setHeight(32),
-                    ),
-                    Text(
-                      AppLocalizations.of(context)!.dontHaveAnAccount,
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      ref.read(appNavigatorProvider).navigateTo(
+                            AppRoutes.signUpEmail,
+                          );
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.signUp,
                       style: TextStyle(
                         fontSize: ScreenUtil().setSp(16),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    TextButton(
-                        onPressed: () {
-                          ref.read(appNavigatorProvider).navigateTo(
-                                AppRoutes.signUpEmail,
-                              );
-                        },
-                        child: Text(AppLocalizations.of(context)!.signUp,
-                            style: TextStyle(
-                              fontSize: ScreenUtil().setSp(16),
-                              fontWeight: FontWeight.w600,
-                            ))),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            if (state.loadingStatus == LoadingStatus.success)
-              const AppLoadingIndicator(),
-          ],
-        ));
+          ),
+          if (state.loadingStatus == LoadingStatus.success)
+            const AppLoadingIndicator(),
+        ],
+      ),
+    );
   }
 }

@@ -13,8 +13,8 @@ class AppErrorView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           AppImages.error(
-            width: ScreenUtil().screenWidth * 0.5,
-            height: ScreenUtil().screenWidth * 0.5,
+            width: ScreenUtil().screenWidth * 0.1,
+            height: ScreenUtil().screenWidth * 0.1,
           ),
           const SizedBox(height: 32),
           Text(
