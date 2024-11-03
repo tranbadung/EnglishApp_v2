@@ -25,7 +25,7 @@ class ExitBottomSheet extends ConsumerWidget {
     return Wrap(
       children: [
         Container(
-          width: ScreenUtil().screenWidth,
+          width: ScreenUtil().screenWidth / 3,
           color: ref.watch(themeProvider) ? Colors.grey[900] : Colors.white,
           child: Column(children: [
             const SizedBox(

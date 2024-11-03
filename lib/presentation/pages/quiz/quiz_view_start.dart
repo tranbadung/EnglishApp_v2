@@ -10,12 +10,20 @@ class QuizStartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text(
+          'Quiz Start',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: EdgeInsets.symmetric(horizontal: isWeb ? 80.w : 16.w),
           child: Container(
+            width: isWeb ? 500.w : double.infinity,
             padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -31,8 +39,7 @@ class QuizStartScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
- 
-                 Container(
+                Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: Colors.purple[100],
@@ -44,23 +51,20 @@ class QuizStartScreen extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.purple,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14.sp,
+                      fontSize: isWeb ? 18.sp : 14.sp,
                     ),
                   ),
                 ),
                 SizedBox(height: 16.h),
-
-                 CircleAvatar(
+                CircleAvatar(
                   radius: 40.r,
-                  backgroundImage: AssetImage(
-                      'assets/images/avatar.png'), 
+                  backgroundImage: AssetImage('assets/images/avatar.png'),
                 ),
                 SizedBox(height: 16.h),
-
-                 Text(
+                Text(
                   'Quiz Today',
                   style: TextStyle(
-                    fontSize: 28.sp,
+                    fontSize: isWeb ? 32.sp : 28.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
@@ -69,13 +73,12 @@ class QuizStartScreen extends StatelessWidget {
                 Text(
                   'Thử thách cấp độ cao nhất!',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: isWeb ? 18.sp : 16.sp,
                     color: Colors.grey[600],
                   ),
                 ),
                 SizedBox(height: 24.h),
-
-                 SizedBox(
+                SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
@@ -96,7 +99,7 @@ class QuizStartScreen extends StatelessWidget {
                     child: Text(
                       'Bắt đầu quiz',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: isWeb ? 18.sp : 16.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -104,8 +107,7 @@ class QuizStartScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 16.h),
-
-                 SizedBox(
+                SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
@@ -126,7 +128,7 @@ class QuizStartScreen extends StatelessWidget {
                     child: Text(
                       'Kiểm tra Flashcard',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: isWeb ? 18.sp : 16.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -137,15 +139,6 @@ class QuizStartScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatView()),
-          );
-        },
-        child: Image.asset('assets/images/chatbot.png'),
       ),
     );
   }

@@ -60,7 +60,7 @@ class AboutView extends StatelessWidget {
               const SizedBox(
                 height: 8,
               ),
-              Text('letan.ssang@gmail.com',
+              Text('Tu@gmail.com',
                   style: TextStyle(
                     fontSize: ScreenUtil().setSp(16),
                     fontWeight: FontWeight.bold,

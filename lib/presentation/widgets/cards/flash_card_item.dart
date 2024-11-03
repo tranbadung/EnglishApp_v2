@@ -1,6 +1,7 @@
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/foundation.dart'; // Đảm bảo bạn có thư viện này để sử dụng kIsWeb
 
 enum FlashCardSize {
   small,
@@ -18,16 +19,17 @@ class FlashCardItem extends StatefulWidget {
   final Function()? onPressedFrontCard;
   final Function()? onPressedBackCard;
 
-  const FlashCardItem(
-      {super.key,
-      required this.frontText,
-      required this.backText,
-      required this.tapFrontDescription,
-      required this.tapBackDescription,
-      required this.backTranslation,
-      this.flashCardSize = FlashCardSize.medium,
-      this.onPressedFrontCard,
-      this.onPressedBackCard});
+  const FlashCardItem({
+    super.key,
+    required this.frontText,
+    required this.backText,
+    required this.tapFrontDescription,
+    required this.tapBackDescription,
+    required this.backTranslation,
+    this.flashCardSize = FlashCardSize.medium,
+    this.onPressedFrontCard,
+    this.onPressedBackCard,
+  });
 
   @override
   State<FlashCardItem> createState() => _FlashCardItemState();
@@ -38,14 +40,39 @@ class _FlashCardItemState extends State<FlashCardItem> {
 
   @override
   Widget build(BuildContext context) {
-    return FlipCard(
-      speed: 300,
-      front: buildFrontCard(context),
-      back: buildBackCard(context),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Tính toán chiều cao card dựa trên kích thước màn hình và FlashCardSize
+        double cardHeight;
+        double cardWidth = constraints.maxWidth *
+            (kIsWeb ? 0.6 : 0.8); // Điều chỉnh chiều rộng cho web
+
+        switch (widget.flashCardSize) {
+          case FlashCardSize.small:
+            cardHeight = constraints.maxHeight *
+                (kIsWeb ? 1 : 0.4); // 30% chiều cao cho web, 40% cho mobile
+            break;
+          case FlashCardSize.medium:
+            cardHeight = constraints.maxHeight *
+                (kIsWeb ? 0.5 : 0.6); // 50% chiều cao cho web, 60% cho mobile
+            break;
+          case FlashCardSize.large:
+            cardHeight = constraints.maxHeight *
+                (kIsWeb ? 0.7 : 0.8); // 70% chiều cao cho web, 80% cho mobile
+            break;
+        }
+
+        return FlipCard(
+          speed: 300,
+          front: buildFrontCard(context, cardWidth, cardHeight),
+          back: buildBackCard(context, cardWidth, cardHeight),
+        );
+      },
     );
   }
 
-  Card buildBackCard(BuildContext context) {
+  Card buildBackCard(
+      BuildContext context, double cardWidth, double cardHeight) {
     return Card(
       elevation: 5,
       color: Theme.of(context).primaryColor,
@@ -63,17 +90,16 @@ class _FlashCardItemState extends State<FlashCardItem> {
           ),
         ),
         padding: const EdgeInsets.all(16),
-        height: widget.flashCardSize == FlashCardSize.medium
-            ? ScreenUtil().screenWidth * 0.8
-            : ScreenUtil().screenHeight * 0.5,
-        width: ScreenUtil().screenWidth * 0.8,
+        height: kIsWeb ? cardHeight : cardHeight,
+        width: cardWidth,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(widget.tapBackDescription,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: ScreenUtil().setSp(16),
+                  fontSize: ScreenUtil()
+                      .setSp(kIsWeb ? 14 : 16), // Giảm kích thước font cho web
                   color: Colors.white70,
                 )),
             Expanded(
@@ -83,7 +109,8 @@ class _FlashCardItemState extends State<FlashCardItem> {
                     isTranslated ? widget.backTranslation : widget.backText,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: ScreenUtil().setSp(24),
+                      fontSize: ScreenUtil().setSp(
+                          kIsWeb ? 40 : 24), // Giảm kích thước font cho web
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -122,7 +149,8 @@ class _FlashCardItemState extends State<FlashCardItem> {
     );
   }
 
-  Card buildFrontCard(BuildContext context) {
+  Card buildFrontCard(
+      BuildContext context, double cardWidth, double cardHeight) {
     return Card(
       color: Theme.of(context).primaryColor,
       child: Container(
@@ -139,17 +167,16 @@ class _FlashCardItemState extends State<FlashCardItem> {
           ),
         ),
         padding: EdgeInsets.all(ScreenUtil().setWidth(16)),
-        height: widget.flashCardSize == FlashCardSize.medium
-            ? ScreenUtil().screenWidth * 0.8
-            : ScreenUtil().screenHeight * 0.5,
-        width: ScreenUtil().screenWidth * 0.8,
+        height: cardHeight,
+        width: cardWidth,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(widget.tapFrontDescription,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: ScreenUtil().setSp(16),
+                  fontSize: ScreenUtil()
+                      .setSp(kIsWeb ? 40 : 16), // Giảm kích thước font cho web
                   color: Colors.white70,
                 )),
             Expanded(
@@ -158,7 +185,8 @@ class _FlashCardItemState extends State<FlashCardItem> {
                   widget.frontText,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: ScreenUtil().setSp(24),
+                    fontSize: ScreenUtil().setSp(
+                        kIsWeb ? 40 : 24), // Giảm kích thước font cho web
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),

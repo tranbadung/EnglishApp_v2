@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:speak_up/presentation/utilities/common/validator.dart';
@@ -38,7 +39,9 @@ class CustomTextField extends StatelessWidget {
       margin: EdgeInsets.symmetric(
           horizontal: ScreenUtil().setWidth(24),
           vertical: ScreenUtil().setHeight(8)),
-      width: width ?? ScreenUtil().screenWidth * 0.8,
+      width: kIsWeb
+          ? ScreenUtil().screenWidth * 0.4
+          : ScreenUtil().screenWidth * 0.8,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -9,6 +9,7 @@ import 'package:speak_up/domain/use_cases/authentication/update_display_name_use
 import 'package:speak_up/domain/use_cases/firestore/save_user_data_use_case.dart';
 import 'package:speak_up/injection/injector.dart';
 import 'package:speak_up/presentation/navigation/app_routes.dart';
+import 'package:speak_up/presentation/pages/sign_in_email/sign_in_email_view.dart';
 import 'package:speak_up/presentation/pages/sign_up/sign_up_state.dart';
 import 'package:speak_up/presentation/pages/sign_up/sign_up_view_model.dart';
 import 'package:speak_up/presentation/resources/app_images.dart';
@@ -57,10 +58,22 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
       if (next == LoadingStatus.success) {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (_) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.success),
-            content: Text(AppLocalizations.of(context)!
-                .yourAccountHasBeenCreatedSuccessfully),
+            title: Text(
+              AppLocalizations.of(context)!.success,
+              style: TextStyle(
+                fontSize: ScreenUtil().setSp(20),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              AppLocalizations.of(context)!
+                  .yourAccountHasBeenCreatedSuccessfully,
+              style: TextStyle(
+                fontSize: ScreenUtil().setSp(16),
+              ),
+            ),
             actions: [
               TextButton(
                 onPressed: () {
@@ -70,7 +83,13 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
                         shouldClearStack: true,
                       );
                 },
-                child: const Text('OK'),
+                child: Text(
+                  'OK',
+                  style: TextStyle(
+                    fontSize: ScreenUtil().setSp(16),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
@@ -85,8 +104,15 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
       if (next.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(getAppErrorMessage(next, context)),
+            content: Text(
+              getAppErrorMessage(next, context),
+              style: TextStyle(
+                fontSize: ScreenUtil().setSp(14),
+              ),
+            ),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16.w),
           ),
         );
       }
@@ -97,110 +123,147 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(signUpViewModelProvider);
-    addFetchingListener(context);
     addErrorMessageListener(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         leading: const AppBackButton(),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              AppImages.signUp(
-                width: ScreenUtil().screenWidth * 0.4,
-                boxFit: BoxFit.fitWidth,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isLargeScreen = constraints.maxWidth > 800;
+          final padding = isLargeScreen
+              ? EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.4)
+              : EdgeInsets.symmetric(horizontal: 16);
+
+          return SingleChildScrollView(
+            padding: padding,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 16),
-                    child: Text(
-                      textAlign: TextAlign.left,
-                      AppLocalizations.of(context)!.createYourAccount,
-                      style: TextStyle(
-                        fontSize: ScreenUtil().setSp(24),
-                        fontWeight: FontWeight.bold,
+                  SizedBox(height: 40.h),
+                  SizedBox(
+                    width: isLargeScreen ? 300.w : 200.w,
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: AppImages.signUp(
+                        boxFit: BoxFit.contain,
                       ),
                     ),
                   ),
+                  SizedBox(height: 40.h),
+                  Text(
+                    AppLocalizations.of(context)!.createYourAccount,
+                    style: TextStyle(
+                      fontSize: isLargeScreen ? 32 : 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 40.h),
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: isLargeScreen ? 500 : double.infinity,
+                    ),
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          hintText: AppLocalizations.of(context)!.enterYourName,
+                          suffixIcon: const Icon(Icons.person),
+                          keyboardType: TextInputType.name,
+                          controller: _userNameTextEditingController,
+                          validatorType: ValidatorType.userName,
+                          context: context,
+                        ),
+                        SizedBox(height: 16.h),
+                        CustomTextField(
+                          hintText:
+                              AppLocalizations.of(context)!.enterYourEmail,
+                          suffixIcon: const Icon(Icons.email),
+                          keyboardType: TextInputType.emailAddress,
+                          controller: _emailTextEditingController,
+                          validatorType: ValidatorType.email,
+                          context: context,
+                        ),
+                        SizedBox(height: 16.h),
+                        CustomTextField(
+                          hintText:
+                              AppLocalizations.of(context)!.enterYourPassword,
+                          suffixIcon: Icon(
+                            state.isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onSuffixIconTap: () {
+                            ref
+                                .read(signUpViewModelProvider.notifier)
+                                .onPasswordVisibilityPressed();
+                          },
+                          keyboardType: TextInputType.visiblePassword,
+                          controller: _passwordTextEditingController,
+                          obscureText: !state.isPasswordVisible,
+                          validatorType: ValidatorType.password,
+                          errorMaxLines: 2,
+                          context: context,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 40.h),
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: isLargeScreen ? 400 : double.infinity,
+                    ),
+                    child: CustomButton(
+                      marginVertical: 16,
+                      onTap: () {
+                        if (!_formKey.currentState!.validate()) return;
+                        ref
+                            .read(signUpViewModelProvider.notifier)
+                            .onSignUpButtonPressed(
+                              _emailTextEditingController.text,
+                              _passwordTextEditingController.text,
+                              _userNameTextEditingController.text,
+                            );
+                      },
+                      text: AppLocalizations.of(context)!.continueButton,
+                      buttonState: state.loadingStatus.buttonState,
+                    ),
+                  ),
+                  SizedBox(height: 32.h),
+                  Text(
+                    AppLocalizations.of(context)!.alreadyHaveAnAccount,
+                    style: TextStyle(
+                      fontSize: isLargeScreen ? 16 : 14,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SignInEmailView()));
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.signIn,
+                      style: TextStyle(
+                        fontSize: isLargeScreen ? 18 : 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                      height: MediaQuery.of(context).viewInsets.bottom + 20.h),
                 ],
               ),
-              CustomTextField(
-                hintText: AppLocalizations.of(context)!.enterYourName,
-                suffixIcon: const Icon(Icons.person),
-                keyboardType: TextInputType.name,
-                controller: _userNameTextEditingController,
-                validatorType: ValidatorType.userName,
-                context: context,
-              ),
-              CustomTextField(
-                hintText: AppLocalizations.of(context)!.enterYourEmail,
-                suffixIcon: const Icon(Icons.email),
-                keyboardType: TextInputType.emailAddress,
-                controller: _emailTextEditingController,
-                validatorType: ValidatorType.email,
-                context: context,
-              ),
-              CustomTextField(
-                hintText: AppLocalizations.of(context)!.enterYourPassword,
-                suffixIcon: Icon(state.isPasswordVisible
-                    ? Icons.visibility
-                    : Icons.visibility_off),
-                onSuffixIconTap: () {
-                  ref
-                      .read(signUpViewModelProvider.notifier)
-                      .onPasswordVisibilityPressed();
-                },
-                keyboardType: TextInputType.visiblePassword,
-                controller: _passwordTextEditingController,
-                obscureText:
-                    !ref.watch(signUpViewModelProvider).isPasswordVisible,
-                validatorType: ValidatorType.password,
-                errorMaxLines: 2,
-                context: context,
-              ),
-              CustomButton(
-                marginVertical: ScreenUtil().setHeight(16),
-                onTap: () {
-                  if (!_formKey.currentState!.validate()) return;
-                  ref
-                      .read(signUpViewModelProvider.notifier)
-                      .onSignUpButtonPressed(
-                          _emailTextEditingController.text,
-                          _passwordTextEditingController.text,
-                          _userNameTextEditingController.text);
-                },
-                text: AppLocalizations.of(context)!.continueButton,
-                buttonState: state.loadingStatus.buttonState,
-              ),
-              Center(
-                child: Text(
-                  AppLocalizations.of(context)!.alreadyHaveAnAccount,
-                  style: TextStyle(
-                    fontSize: ScreenUtil().setSp(14),
-                  ),
-                ),
-              ),
-              Center(
-                child: TextButton(
-                    onPressed: () {
-                      ref.read(appNavigatorProvider).pop();
-                    },
-                    child: Text(AppLocalizations.of(context)!.signIn,
-                        style: TextStyle(
-                          fontSize: ScreenUtil().setSp(16),
-                          fontWeight: FontWeight.w600,
-                        ))),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

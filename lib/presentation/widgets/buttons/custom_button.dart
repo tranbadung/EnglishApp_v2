@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:speak_up/presentation/utilities/enums/button_state.dart';
@@ -74,7 +75,9 @@ class CustomButton extends StatelessWidget {
                 ),
               buttonState == ButtonState.loading
                   ? SizedBox(
-                      height: ScreenUtil().setHeight(15),
+                      height: kIsWeb
+                          ? ScreenUtil().setHeight(10)
+                          : ScreenUtil().setHeight(15),
                       width: ScreenUtil().setHeight(15),
                       child: const CircularProgressIndicator(
                         color: Colors.white,

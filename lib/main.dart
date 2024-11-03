@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -44,7 +45,7 @@ class MyApp extends ConsumerWidget {
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
     return ScreenUtilInit(
-        designSize: const Size(375, 812),
+        designSize: kIsWeb ? const Size(1440, 1024) : const Size(375, 812),
         builder: (context, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,

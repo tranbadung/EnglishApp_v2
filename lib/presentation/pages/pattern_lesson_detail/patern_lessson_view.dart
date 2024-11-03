@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,15 +85,15 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
       print('Trạng thái của bài học ${lesson.lessonID}: ${lesson.isLearned}');
     }
 
-    setState(() {}); 
+    setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () async {
-      await _loadLessonsAndStates();  
-      _setupBannerTimer();  
+      await _loadLessonsAndStates();
+      _setupBannerTimer();
     });
   }
 
@@ -126,7 +127,7 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
     });
   }
 
-   Future<void> _saveLessonState(Lesson lesson) async {
+  Future<void> _saveLessonState(Lesson lesson) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(
         'lesson_${lesson.lessonID}_isLearned', lesson.isLearned);
@@ -134,7 +135,7 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
   }
 
   void _navigateToLesson(Lesson lesson) async {
-     setState(() {
+    setState(() {
       lesson.isLearned = true;
     });
     await _saveLessonState(lesson);
@@ -153,7 +154,7 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('lesson_${lesson.lessonID}_isLearned', true);
 
-     await _loadLessonStates();
+    await _loadLessonStates();
 
     setState(() {});
     print('Lưu trạng thái cho bài học ${lesson.lessonID}: ${lesson.isLearned}');
@@ -198,12 +199,10 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
           const SizedBox(height: 16),
           const Spacer(),
           ElevatedButton(
-          
             onPressed: () async {
-              Navigator.pop(context); 
-              await _saveLessonState(
-                  lesson);  
-              _navigateToLesson(lesson);  
+              Navigator.pop(context);
+              await _saveLessonState(lesson);
+              _navigateToLesson(lesson);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple.shade200,
@@ -237,9 +236,10 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
     setState(() {});
   }
 
- 
-
   Widget buildNode(int index, Lesson lesson) {
+    // Kiểm tra xem ứng dụng đang chạy trên web hay không
+    final isWeb = kIsWeb;
+
     return GestureDetector(
       onTap: () {
         showModalBottomSheet(
@@ -255,10 +255,10 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 500),
-        width: 100,
-        height: 60,
+        width: isWeb ? 120 : 100, // Kích thước cho web lớn hơn một chút
+        height: isWeb ? 80 : 60, // Tương tự cho chiều cao
         margin: EdgeInsets.only(
-          top: 20,
+          top: isWeb ? 30 : 20, // Khoảng cách trên lớn hơn trên web
           left: (24 * calcPosition(index.toDouble()) <= 0)
               ? (24 * calcPosition(index.toDouble())).abs()
               : 0,
@@ -273,14 +273,14 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
               color: Colors.purple.shade100,
               blurRadius: 19,
               spreadRadius: 0.1,
-            )
+            ),
           ],
         ),
         child: ClipOval(
           child: Image.asset(
             lesson.isLearned
-                ? 'assets/images/Screenshot_2024-10-24_153614-removebg-preview.png' 
-                : 'assets/images/Screenshot_2024-10-17_161446-removebg-preview.png',  
+                ? 'assets/images/Screenshot_2024-10-24_153614-removebg-preview.png'
+                : 'assets/images/Screenshot_2024-10-17_161446-removebg-preview.png',
           ),
         ),
       ),
@@ -368,6 +368,27 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
                           itemCount: lessons.length,
                           itemBuilder: (context, index) {
                             return buildNode(index, lessons[index]);
+                          },
+                        )
+                      else if (state.lessonsLoadingStatus ==
+                          LoadingStatus.error) // Khi có lỗi tải dữ liệu
+                        ListView.builder(
+                          itemCount: 6, // Hiển thị 6 phần tử mẫu
+                          itemBuilder: (context, index) {
+                            // Tạo một bài học mẫu để hiển thị
+                            Lesson sampleLesson = Lesson(
+                              lessonID: 1, // ID giả
+                              name: 'Phần tử mẫu ${index + 1}', // Tiêu đề giả
+                              description:
+                                  'Mô tả của phần tử mẫu ${index + 1}', // Mô tả giả
+                              isLearned: false,
+                              translation: '',
+                              descriptionTranslation: '',
+                              imageURL:
+                                  'assets/images/banner4.png', // Có thể đặt trạng thái học
+                            );
+                            return buildNode(index,
+                                sampleLesson); // Sử dụng hàm buildNode của bạn
                           },
                         )
                       else

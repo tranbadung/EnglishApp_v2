@@ -43,9 +43,9 @@ class LessonView1 extends ConsumerStatefulWidget {
 class _LessonView1State extends ConsumerState<LessonView1> {
   HomeViewModel get _viewModel => ref.read(homeViewModelProvider.notifier);
   Future<void> _init() async {
-    if (!mounted) return;  
+    if (!mounted) return;
     await _viewModel.getCategoryList();
-    if (!mounted) return;  
+    if (!mounted) return;
     await _viewModel.getLessonList();
     if (!mounted) return;
     await _viewModel.getFlashCardList();
@@ -74,10 +74,10 @@ class _LessonView1State extends ConsumerState<LessonView1> {
     super.initState();
     Future.delayed(Duration.zero, () async {
       await _init();
-      
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _bannerTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
-          if (!mounted) return; 
+          if (!mounted) return;
 
           if (_currentBannerPage < 2) {
             _currentBannerPage++;
@@ -85,7 +85,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
             _currentBannerPage = 0;
           }
 
-           if (_bannerController.hasClients) {
+          if (_bannerController.hasClients) {
             _bannerController.animateToPage(
               _currentBannerPage,
               duration: Duration(milliseconds: 300),
@@ -99,8 +99,8 @@ class _LessonView1State extends ConsumerState<LessonView1> {
 
   @override
   void dispose() {
-    _bannerTimer?.cancel();  
-    _bannerController.dispose();  
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
     super.dispose();
   }
 
@@ -111,7 +111,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Row(
+        title: const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
@@ -120,6 +120,11 @@ class _LessonView1State extends ConsumerState<LessonView1> {
                 SizedBox(width: 5),
                 Text('1', style: TextStyle(color: Colors.grey)),
               ],
+            ),
+            Text(
+              'Lesson',
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
             SizedBox(width: 10),
           ],
@@ -153,21 +158,10 @@ class _LessonView1State extends ConsumerState<LessonView1> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatView()),
-          );
-        },
-        child: Image.asset('assets/images/chatbot.png'),
-      ),
     );
   }
 
   Widget buildExploreItem(Lesson lesson) {
-    
-
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
 
@@ -253,7 +247,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-           state.lessonsLoadingStatus == LoadingStatus.success
+          state.lessonsLoadingStatus == LoadingStatus.success
               ? SizedBox(
                   height: 300,
                   child: ListView.builder(
@@ -265,8 +259,16 @@ class _LessonView1State extends ConsumerState<LessonView1> {
                     },
                   ),
                 )
-              : Center(child: CircularProgressIndicator()),
-
+              : SizedBox(
+                  height: 300, // Giữ kích thước giống như danh sách
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 6, // Hiển thị 6 phần tử
+                    itemBuilder: (context, index) {
+                      return buildCourseCardPlaceholder(); // Tạo một hàm mới để tạo phần tử mẫu
+                    },
+                  ),
+                ),
           SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -281,7 +283,64 @@ class _LessonView1State extends ConsumerState<LessonView1> {
     );
   }
 
-   Widget buildCourseCard(Lesson lesson) {
+  Widget buildCourseCardPlaceholder() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        width: 400,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: Colors.grey[300], // Màu sắc placeholder
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              height: 100,
+              color: Colors.grey[400], // Màu nền cho hình ảnh
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 5),
+                  Container(
+                    height: 16,
+                    width: double.infinity,
+                    color: Colors.grey[400], // Màu nền cho tên khóa học
+                  ),
+                  SizedBox(height: 5),
+                  Container(
+                    height: 14,
+                    width: double.infinity,
+                    color: Colors.grey[300], // Màu nền cho dịch nghĩa
+                  ),
+                  Container(
+                    height: 14,
+                    width: double.infinity,
+                    color: Colors.grey[300], // Màu nền cho mô tả
+                  ),
+                  SizedBox(height: 5),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildCourseCard(Lesson lesson) {
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
 
@@ -314,15 +373,23 @@ class _LessonView1State extends ConsumerState<LessonView1> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        topRight: Radius.circular(15)),
-                    child: Image.asset(lesson.imageURL,
-                        fit: BoxFit.cover, width: double.infinity, height: 100),
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
+                    ),
+                    child: Image.asset(
+                      lesson.imageURL,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: 100,
+                    ),
                   ),
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Icon(Icons.bookmark_border, color: Colors.white),
+                    child: Icon(
+                      Icons.bookmark_border,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -334,13 +401,16 @@ class _LessonView1State extends ConsumerState<LessonView1> {
                     SizedBox(height: 5),
                     Text(
                       lesson.name,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16, // Tăng kích thước chữ
+                      ),
                     ),
                     SizedBox(height: 5),
                     Text(
                       lesson.translation,
                       style: TextStyle(color: Colors.grey),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
@@ -349,6 +419,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    SizedBox(height: 5),
                   ],
                 ),
               ),
@@ -415,9 +486,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
         subtitle: Text(description),
         trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () {
- 
- 
-           Navigator.push(
+          Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => SkillDetailPage(skillName: skillName)),
