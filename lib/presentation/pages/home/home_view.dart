@@ -533,7 +533,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Widget buildConversationItem(Category category, int index) {
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
-  q
+
     return GestureDetector(
       onTap: () {
         ref
