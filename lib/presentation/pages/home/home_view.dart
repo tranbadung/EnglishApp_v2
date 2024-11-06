@@ -184,7 +184,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
               itemBuilder: (context, index) {
                 final videoPath = reelsState.localVideos[index];
                 final videoName = path.basename(videoPath).split('.').first;
-
+                final thumbnailPath = reelsState.videoThumbnails.isNotEmpty &&
+                        index < reelsState.videoThumbnails.length
+                    ? reelsState.videoThumbnails[index]
+                    : 'assets/images/video_placeholder.png'; // Placeholder nếu không có thumbnail
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -239,9 +242,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               border: Border.all(color: Colors.black54),
                               color: Colors.grey[300],
                               image: DecorationImage(
-                                image: AssetImage(
-                                  'assets/images/video_placeholder.png',
-                                ),
+                                image: AssetImage(thumbnailPath),
                                 fit: BoxFit.cover,
                                 onError: (exception, stackTrace) {
                                   print(
@@ -430,7 +431,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     ),
                   ),
                   Text(
-                    'Có 5 Cuộc Đàm Thoại',
+                    'Có ${state.categories.length} Cuộc Đàm Thoại',
                     style: TextStyle(
                       fontSize: ScreenUtil().setSp(16),
                       color: Colors.orange,
@@ -470,37 +471,61 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   },
                 ),
               )
-            : Center(child: SizedBox()),
-        // Hiển thị nội dung thay thế khi không có dữ liệu
-        state.categoriesLoadingStatus == LoadingStatus.error
-            ? SizedBox(
-                height: ScreenUtil().screenHeight * 0.4,
-                child: GridView.count(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  crossAxisCount: 5, // Số lượng cột
-                  mainAxisSpacing: 16, // Khoảng cách theo chiều dọc
-                  crossAxisSpacing: 16, // Khoảng cách theo chiều ngang
-                  childAspectRatio: 1, // Tỉ lệ chiều cao/chiều rộng
-                  children: List.generate(5, (index) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300], // Màu nền cho phần tử thay thế
-                        borderRadius: BorderRadius.circular(10),
+            : state.categoriesLoadingStatus == LoadingStatus.error
+                ? SizedBox(
+                    height: ScreenUtil().screenHeight * 0.4,
+                    child: GridView.builder(
+                      scrollDirection: Axis.horizontal, // Cuộn ngang
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount:
+                            1, // Chỉ 1 phần tử trong mỗi hàng, điều chỉnh nếu muốn
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio:
+                            1, // Tỷ lệ chiều rộng:chiều cao của phần tử
                       ),
-                      child: Center(
-                        child: Text(
-                          'Nội dung thay thế ${index + 1}', // Văn bản cho phần tử thay thế
-                          style: TextStyle(
-                            fontSize: ScreenUtil().setSp(18),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              )
-            : Container(), // Nếu không có trạng thái lỗi, không hiển thị gì
+                      itemCount: categories
+                          .length, // Sử dụng danh sách categories thay thế
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        // Use the category directly instead of accessing state.categories
+                        return buildConversationItem(category, index);
+                      },
+                    ),
+
+                    // return Container(
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.grey[300],
+                    //     borderRadius: BorderRadius.circular(10),
+                    //   ),
+                    //   child: Column(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       // Hiển thị hình ảnh từ imageURL
+                    //       Image.asset(
+                    //         'assets/images/temp_topic.png',
+                    //         // Đảm bảo rằng category.imageURL có giá trị hợp lệ
+                    //         fit: BoxFit.cover,
+                    //       ),
+                    //       SizedBox(
+                    //           height:
+                    //               8), // Khoảng cách giữa hình ảnh và text
+                    //       // Hiển thị tên category
+                    //       Text(
+                    //         category
+                    //             .translation, // Hiển thị translation của category
+                    //         style: TextStyle(
+                    //           fontSize: ScreenUtil().setSp(18),
+                    //           fontWeight: FontWeight.w600,
+                    //         ),
+                    //         textAlign: TextAlign.center,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // );
+                  )
+                : Container(),
       ],
     );
   }
@@ -508,7 +533,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Widget buildConversationItem(Category category, int index) {
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
-
+  q
     return GestureDetector(
       onTap: () {
         ref

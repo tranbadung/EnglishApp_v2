@@ -6,6 +6,7 @@ import 'package:speak_up/presentation/pages/chat/chat_view.dart';
 import 'package:speak_up/presentation/pages/home/home_view.dart';
 import 'package:speak_up/presentation/pages/lesson/lessonview.dart';
 import 'package:speak_up/presentation/pages/pattern_lesson_detail/patern_lessson_view.dart';
+import 'package:speak_up/presentation/pages/profile/profile_screen.dart';
 import 'package:speak_up/presentation/pages/profile/profile_view.dart';
 import 'package:speak_up/presentation/pages/quiz/quiz_view_start.dart';
 import 'main_menu_state.dart';
@@ -29,7 +30,7 @@ class MainMenuView extends ConsumerWidget {
       const QuizStartScreen(),
       LessonView1(),
       ProgressTrackingScreen(),
-      ProgressTrackingScreen(),
+      UsersListScreen(),
     ];
 
     return Scaffold(
@@ -114,7 +115,7 @@ class MainMenuView extends ConsumerWidget {
             _buildNavItem(context, ref, Icons.quiz, 'Đề thi online', 3),
             _buildNavItem(context, ref, Icons.play_lesson, 'Flashcards', 2),
             _buildNavItem(context, ref, Icons.person, 'tài khoản', 4),
-            _buildNavItem(context, ref, Icons.person, 'Quản lý người dùng', 4),
+            _buildNavItem(context, ref, Icons.person, 'Quản lý người dùng', 5),
           ],
         ),
         const SizedBox(width: 16),

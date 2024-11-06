@@ -193,7 +193,9 @@ class AppModules {
     // Authentication repository
     injector.registerLazySingleton<AuthenticationRepository>(() =>
         AuthenticationRepository(
-            injector.get<FirebaseAuth>(), injector.get<GoogleSignIn>()));
+          injector.get<FirebaseAuth>(), injector.get<GoogleSignIn>(),
+          injector.get<FirestoreRepository>(), // Add FirestoreRepository here
+        ));
 
     // Firestore repository
     injector.registerLazySingleton<FirestoreRepository>(

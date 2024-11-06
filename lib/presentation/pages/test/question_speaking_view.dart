@@ -33,16 +33,16 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
   };
   void _startTimer(int durationInSeconds) {
     _remainingSeconds = durationInSeconds;
-    _timer?.cancel();  
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingSeconds > 0) {
         setState(() {
           _remainingSeconds--;
         });
       } else {
-        _stopListening();  
+        _stopListening();
         timer.cancel();
-        _nextPart();  
+        _nextPart();
       }
     });
   }
@@ -55,22 +55,13 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
 
   DateTime? _partStartTime;
 
- 
-
   @override
   void initState() {
     super.initState();
     _initSpeech();
 
-     if (_currentPartIndex == 0) {
-      _startTimer(180);  
-    }
-  }
-
-  Future<void> _requestMicPermission() async {
-    var status = await Permission.microphone.status;
-    if (!status.isGranted) {
-      await Permission.microphone.request();
+    if (_currentPartIndex == 0) {
+      _startTimer(180);
     }
   }
 
@@ -80,13 +71,12 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
   }
 
   void _startListening() async {
-    await _requestMicPermission();
     _partStartTime = DateTime.now();
 
-     int timeLimit =
+    int timeLimit =
         _currentPartIndex == 0 ? 180 : (_currentPartIndex == 1 ? 120 : 300);
 
-     _startTimer(timeLimit);
+    _startTimer(timeLimit);
 
     await _speechToText.listen(
       onResult: _onSpeechResult,
@@ -94,11 +84,11 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
       pauseFor: Duration(seconds: 10),
       localeId: 'en_US',
     );
-    setState(() {});  
+    setState(() {});
   }
 
   void _stopListening() async {
-    _timer?.cancel(); 
+    _timer?.cancel();
 
     await _speechToText.stop();
     if (_partStartTime != null) {
@@ -115,7 +105,7 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
         _recognizedSentences.add(result.recognizedWords);
         _lastRecognizedWords = result.recognizedWords;
 
-         _partTranscripts['part${_currentPartIndex + 1}'] =
+        _partTranscripts['part${_currentPartIndex + 1}'] =
             _recognizedSentences.join('. ');
       }
     });
@@ -132,9 +122,9 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
         _partStartTime = null;
       });
 
-       _startListening();
+      _startListening();
     } else {
-       try {
+      try {
         final assessment = await getFullSpeakingAssessment(
           part1Transcript: _partTranscripts['part1'] ?? '',
           part2Transcript: _partTranscripts['part2'] ?? '',
@@ -160,7 +150,7 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
     }
   }
 
-   String _formatTime(int seconds) {
+  String _formatTime(int seconds) {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
@@ -182,7 +172,7 @@ class _IELTSSpeakingTestPageState extends State<IELTSSpeakingTestPage> {
               ),
             ),
           ),
-        ],  
+        ],
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
