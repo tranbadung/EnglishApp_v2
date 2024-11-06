@@ -2,21 +2,14 @@ class Category {
   final int categoryID;
   final String name;
   final String translation;
-  final String imageUrl;
+  final String imageURL;
 
   Category({
     required this.categoryID,
     required this.name,
     required this.translation,
-    required this.imageUrl,
+    required this.imageURL,
   });
-
-  factory Category.initial() => Category(
-        categoryID: 0,
-        name: '',
-        translation: '',
-        imageUrl: '',
-      );
 }
 
 final List<Category> categories = [
@@ -24,119 +17,119 @@ final List<Category> categories = [
     categoryID: 1,
     name: 'Active Lifestyle',
     translation: 'Lối sống năng động',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 2,
     name: 'Art',
     translation: 'Nghệ thuật',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 3,
     name: 'Business',
     translation: 'Việc kinh doanh',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 4,
     name: 'Community',
     translation: 'Cộng đồng',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 5,
     name: 'Dining',
     translation: 'Ẩm thực',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 6,
     name: 'Entertainment',
     translation: 'Giải trí',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 7,
     name: 'Fashion',
     translation: 'Thời trang',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 8,
     name: 'Festivities',
     translation: 'Lễ hội',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 9,
     name: 'Health',
     translation: 'Sức khỏe',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 10,
     name: 'Literature',
     translation: 'Văn học',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 11,
     name: 'Memorable Events',
     translation: 'Sự kiện đáng nhớ',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 12,
     name: 'Online Presence',
     translation: 'Hiện diện trực tuyến',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 13,
     name: 'Personal Development',
     translation: 'Phát triển cá nhân',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 14,
     name: 'Relationship',
     translation: 'Mối quan hệ',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 15,
     name: 'Technology',
     translation: 'Công nghệ',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 16,
     name: 'Travel',
     translation: 'Du lịch',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
   Category(
     categoryID: 17,
     name: 'Urban Life',
     translation: 'Cuộc sống đô thị',
-    imageUrl:
+    imageURL:
         'https://firebasestorage.googleapis.com/v0/b/speak-up-flutter.appspot.com/o/temp_topic.png?alt=media&token=1a238f27-1f93-41d6-a288-efd86b89dc6a',
   ),
 ];

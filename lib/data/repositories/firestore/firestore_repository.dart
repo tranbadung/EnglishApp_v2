@@ -5,16 +5,248 @@ import 'package:speak_up/domain/entities/lecture_process/lecture_process.dart';
 
 class FirestoreRepository {
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final String usersCollection = 'users';
+  final String userSessionsCollection = 'user_sessions';
 
   FirestoreRepository(this._firestore);
 
-  Future<void> saveUserData(User user) async {
-    _firestore.collection('users').doc(user.uid).set({
-      'uid': user.uid,
-      'email': user.email,
-      'name': user.displayName,
-      'photoUrl': user.photoURL,
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    QuerySnapshot snapshot = await _firestore.collection('users').get();
+    return snapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
+  }
+
+  Future<void> updateLoginTimestamp(User user) async {
+    await _firestore.collection('users').doc(user.uid).update({
+      'lastLoginAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<void> updateLogoutTimestamp(User user) async {
+    await _firestore.collection('users').doc(user.uid).update({
+      'lastLogoutAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getTime() async {
+    try {
+      final QuerySnapshot userSnapshot =
+          await _firestore.collection(usersCollection).orderBy('name').get();
+
+      List<Map<String, dynamic>> users = [];
+
+      for (var doc in userSnapshot.docs) {
+        // Get the latest session for this user
+        final latestSession = await _firestore
+            .collection(userSessionsCollection)
+            .where('userId', isEqualTo: doc.id)
+            .orderBy('loginTime', descending: true)
+            .limit(1)
+            .get();
+
+        Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
+        userData['id'] = doc.id;
+
+        if (latestSession.docs.isNotEmpty) {
+          final sessionData = latestSession.docs.first.data();
+          final loginTime = (sessionData['loginTime'] as Timestamp).toDate();
+          final logoutTime = sessionData['logoutTime'] != null
+              ? (sessionData['logoutTime'] as Timestamp).toDate()
+              : null;
+
+          userData['lastLoginTime'] = loginTime;
+          userData['lastLogoutTime'] = logoutTime;
+          userData['isCurrentlyLoggedIn'] = logoutTime == null;
+
+          if (logoutTime == null) {
+            // Calculate session duration if user is still logged in
+            final duration = DateTime.now().difference(loginTime);
+            userData['currentSessionDuration'] = duration;
+          }
+        }
+
+        users.add(userData);
+      }
+
+      return users;
+    } catch (e) {
+      print('Error getting users: $e');
+      throw e;
+    }
+  }
+
+  // Add new user
+  Future<void> addUser(Map<String, dynamic> userData) async {
+    try {
+      await _firestore.collection(usersCollection).add(userData);
+    } catch (e) {
+      print('Error adding user: $e');
+      throw e;
+    }
+  }
+
+  // Update existing user
+  Future<void> updateUser(String userId, Map<String, dynamic> userData) async {
+    try {
+      await _firestore.collection(usersCollection).doc(userId).update(userData);
+    } catch (e) {
+      print('Error updating user: $e');
+      throw e;
+    }
+  }
+
+  // Delete user
+  Future<void> deleteUser(String userId) async {
+    try {
+      // Delete user sessions first
+      final sessions = await _firestore
+          .collection(userSessionsCollection)
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (var session in sessions.docs) {
+        await session.reference.delete();
+      }
+
+      // Then delete the user
+      await _firestore.collection(usersCollection).doc(userId).delete();
+    } catch (e) {
+      print('Error deleting user: $e');
+      throw e;
+    }
+  }
+
+  // Record user login
+  Future<void> recordUserLogin(String userId) async {
+    try {
+      await _firestore.collection(userSessionsCollection).add({
+        'userId': userId,
+        'loginTime': FieldValue.serverTimestamp(),
+        'deviceInfo': await _getDeviceInfo(),
+      });
+    } catch (e) {
+      print('Error recording login: $e');
+      throw e;
+    }
+  }
+
+  // Record user logout
+  Future<void> recordUserLogout(String userId) async {
+    try {
+      // Find the latest active session for this user
+      final activeSession = await _firestore
+          .collection(userSessionsCollection)
+          .where('userId', isEqualTo: userId)
+          .where('logoutTime', isNull: true)
+          .orderBy('loginTime', descending: true)
+          .limit(1)
+          .get();
+
+      if (activeSession.docs.isNotEmpty) {
+        await activeSession.docs.first.reference.update({
+          'logoutTime': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error recording logout: $e');
+      throw e;
+    }
+  }
+
+  // Get user's total session time today
+  Future<Duration> getUserTodaySessionTime(String userId) async {
+    try {
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+
+      final sessions = await _firestore
+          .collection(userSessionsCollection)
+          .where('userId', isEqualTo: userId)
+          .where('loginTime', isGreaterThanOrEqualTo: startOfDay)
+          .get();
+
+      Duration totalDuration = Duration.zero;
+
+      for (var session in sessions.docs) {
+        final data = session.data();
+        final loginTime = (data['loginTime'] as Timestamp).toDate();
+        final logoutTime = data['logoutTime'] != null
+            ? (data['logoutTime'] as Timestamp).toDate()
+            : DateTime.now();
+
+        totalDuration += logoutTime.difference(loginTime);
+      }
+
+      return totalDuration;
+    } catch (e) {
+      print('Error calculating session time: $e');
+      throw e;
+    }
+  }
+
+  // Get device info for session tracking
+  Future<Map<String, dynamic>> _getDeviceInfo() async {
+    // You would typically use a package like 'device_info_plus' here
+    // For now, returning basic info
+    return {
+      'platform': 'Flutter',
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+  }
+
+  Future<void> saveUserData(User user) async {
+    print("Saving user data for: ${user.uid}");
+    try {
+      // Data to be saved
+      final userData = {
+        'uid': user.uid,
+        'email': user.email,
+        'name': user.displayName ?? '',
+        'photoUrl': user.photoURL ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'lastLoginAt': FieldValue.serverTimestamp(), // Thời gian đăng nhập
+      };
+      print("Saving user data to collection: users, Document ID: ${user.uid}");
+
+      // Save or update user data in Firestore
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .set(userData, SetOptions(merge: true));
+      print("User data saved successfully");
+    } catch (e) {
+      print("Failed to save user data: $e");
+    }
+  }
+
+  Future<void> updateLogoutTime(String uid) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'lastLogoutAt': FieldValue.serverTimestamp(), // Thời gian đăng xuất
+      });
+      print("User logout time updated successfully");
+    } catch (e) {
+      print("Failed to update logout time: $e");
+    }
+  }
+
+  Future<void> calculateUsageTime(String uid) async {
+    final userDoc = await _firestore.collection('users').doc(uid).get();
+    if (userDoc.exists) {
+      final lastLoginAt = (userDoc['lastLoginAt'] as Timestamp?)?.toDate();
+      final lastLogoutAt = (userDoc['lastLogoutAt'] as Timestamp?)?.toDate();
+
+      if (lastLoginAt != null && lastLogoutAt != null) {
+        final duration = lastLogoutAt.difference(lastLoginAt);
+        print("Time spent in app: ${duration.inMinutes} minutes");
+      } else {
+        print("Login or logout time not available");
+      }
+    } else {
+      print("User document does not exist");
+    }
   }
 
   Future<void> updateUserActivity() async {

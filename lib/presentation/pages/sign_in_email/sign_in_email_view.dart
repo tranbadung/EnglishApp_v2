@@ -96,7 +96,7 @@ class _SignInEmailViewState extends ConsumerState<SignInEmailView> {
                   AppImages.signInEmail(
                     width: kIsWeb
                         ? ScreenUtil().screenWidth * 0.25
-                        : ScreenUtil().screenWidth * 0.4,
+                        : ScreenUtil().screenWidth * 0.93,
                     boxFit: BoxFit.fitWidth,
                   ),
                   Row(

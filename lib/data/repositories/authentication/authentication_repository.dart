@@ -1,32 +1,49 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:speak_up/data/repositories/firestore/firestore_repository.dart';
 
 class AuthenticationRepository {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final FirestoreRepository _firestoreRepository;
 
-  AuthenticationRepository(this._firebaseAuth, this._googleSignIn);
+  AuthenticationRepository(
+      this._firebaseAuth, this._googleSignIn, this._firestoreRepository);
 
   Future<UserCredential> createUserWithEmailAndPassword(
       String email, String password) async {
     try {
-      return await _firebaseAuth.createUserWithEmailAndPassword(
-          email: email, password: password);
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Save user data to Firestore via FirestoreRepository
+      await _firestoreRepository.saveUserData(userCredential.user!);
+
+      return userCredential;
     } catch (e) {
-      // Xử lý lỗi và có thể ném một ngoại lệ với thông báo rõ ràng
       throw Exception('Failed to create user: $e');
     }
   }
 
   Future<UserCredential> signInWithEmailAndPassword(
       String email, String password) async {
-    return await _firebaseAuth.signInWithEmailAndPassword(
-        email: email, password: password);
+    final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Cập nhật thời gian đăng nhập
+    await _firestoreRepository.updateLoginTimestamp(userCredential.user!);
+
+    return userCredential;
   }
 
   Future<UserCredential> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     if (googleUser == null) return Future.error('Google sign in failed');
+
     final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
     final AuthCredential credential = GoogleAuthProvider.credential(
@@ -34,7 +51,12 @@ class AuthenticationRepository {
       idToken: googleAuth.idToken,
     );
 
-    return await _firebaseAuth.signInWithCredential(credential);
+    final userCredential = await _firebaseAuth.signInWithCredential(credential);
+
+    // Save user data to Firestore via FirestoreRepository
+    await _firestoreRepository.saveUserData(userCredential.user!);
+
+    return userCredential;
   }
 
   Future<void> updateDisplayName(String name) async {
@@ -57,9 +79,15 @@ class AuthenticationRepository {
     await _firebaseAuth.currentUser!.reauthenticateWithCredential(credential);
   }
 
-  Future<void> signOut() async {
+   Future<void> signOut() async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      // Cập nhật thời gian đăng xuất
+      await _firestoreRepository.updateLogoutTimestamp(user);
+    }
+
     await _firebaseAuth.signOut();
-  }
+  } 
 
   bool isSignedIn() {
     return _firebaseAuth.currentUser != null;
