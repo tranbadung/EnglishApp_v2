@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,6 +64,7 @@ class _IpaViewState extends ConsumerState<IpaView>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(ipaViewModelProvider);
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -73,19 +75,21 @@ class _IpaViewState extends ConsumerState<IpaView>
             controller: _tabController,
             tabs: [
               Tab(
-                  child: Text(
-                AppLocalizations.of(context)!.vowels,
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(12),
+                child: Text(
+                  AppLocalizations.of(context)!.vowels,
+                  style: TextStyle(
+                    fontSize: ScreenUtil().setSp(12),
+                  ),
                 ),
-              )),
+              ),
               Tab(
-                  child: Text(
-                AppLocalizations.of(context)!.consonants,
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(12),
+                child: Text(
+                  AppLocalizations.of(context)!.consonants,
+                  style: TextStyle(
+                    fontSize: ScreenUtil().setSp(12),
+                  ),
                 ),
-              )),
+              ),
             ],
           ),
         ),
@@ -101,7 +105,13 @@ class _IpaViewState extends ConsumerState<IpaView>
             )
           : state.loadingStatus == LoadingStatus.error ||
                   state.progressLoadingStatus == LoadingStatus.error
-              ? const AppErrorView()
+              ? TabBarView(
+                  controller: _tabController,
+                  children: [
+                    buildVowels(phoneticData, state.isDoneVowelList),
+                    buildConsonants(phoneticData, state.isDoneConsonantList),
+                  ],
+                )
               : const AppLoadingIndicator(),
     );
   }
@@ -117,7 +127,10 @@ class _IpaViewState extends ConsumerState<IpaView>
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32),
       itemCount: vowels.length,
       itemBuilder: (context, index) {
-        return buildPhoneticCard(vowels[index], isDoneList[index]);
+        return buildPhoneticCard(
+          vowels.length > index ? vowels[index] : phoneticData[index],
+          isDoneList.length > index ? isDoneList[index] : false,
+        );
       },
     );
   }
@@ -131,9 +144,12 @@ class _IpaViewState extends ConsumerState<IpaView>
         crossAxisSpacing: 8.0,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32),
-      itemCount: 24,
+      itemCount: consonants.length,
       itemBuilder: (context, index) {
-        return buildPhoneticCard(consonants[index], isDoneList[index]);
+        return buildPhoneticCard(
+          consonants.length > index ? consonants[index] : phoneticData[index],
+          isDoneList.length > index ? isDoneList[index] : false,
+        );
       },
     );
   }
@@ -150,6 +166,8 @@ class _IpaViewState extends ConsumerState<IpaView>
               );
         },
         child: Container(
+          height: 200,
+          width: 200,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.0),
             border: Border.all(
@@ -164,7 +182,9 @@ class _IpaViewState extends ConsumerState<IpaView>
                 child: Column(
                   children: [
                     SizedBox(
-                      height: ScreenUtil().setHeight(8),
+                      height: kIsWeb
+                          ? ScreenUtil().setHeight(0)
+                          : ScreenUtil().setHeight(8),
                     ),
                     Text(
                       phonetic.phonetic,
@@ -189,7 +209,6 @@ class _IpaViewState extends ConsumerState<IpaView>
               ),
               if (isDone)
                 Positioned(
-                    // top right
                     top: 4,
                     right: 4,
                     child: Icon(

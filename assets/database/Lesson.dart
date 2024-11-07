@@ -5,7 +5,6 @@ class Lesson {
   final String description;
   final String descriptionTranslation;
   final String imageURL;
-  bool isLearned; // Thêm cờ để kiểm tra nếu bài học đã học
 
   Lesson({
     required this.lessonID,
@@ -14,18 +13,7 @@ class Lesson {
     required this.description,
     required this.descriptionTranslation,
     required this.imageURL,
-    required this.isLearned,
   });
-
-  factory Lesson.initial() => Lesson(
-        lessonID: 0,
-        name: '',
-        translation: '',
-        description: '',
-        descriptionTranslation: '',
-        imageURL: '',
-        isLearned: false,
-      );
 }
 
 List<Lesson> createSampleLessons() {
@@ -33,13 +21,12 @@ List<Lesson> createSampleLessons() {
     Lesson(
       lessonID: 1,
       name: 'Common English Phrases, Sentence Patterns',
-      translation: 'Cụm từ và mẫu câu Tiếng Anh thông dụng1',
+      translation: 'Cụm từ và mẫu câu Tiếng Anh thông dụng',
       description:
           'You want to improve your English speaking but don’t know where to start? You know a lot of English words but have a hard time making sentences in English?You know why?The reason is you don’t learn common English phrases and sentence patterns, do you? These phrases and patterns are said as basic units for you to make much more correct sentences in English.Below are 100 common English phrases and sentence patterns that are much used in daily life. Each common English phrase includes real audios and scripts which help you learn sentence structures better, and make sentences in English much more easily.If you master just one common English phrase or sentence pattern, you can make hundreds of correct sentences. This is the easiest way to make sentences in English..',
       descriptionTranslation:
           'Bạn muốn cải thiện khả năng nói tiếng Anh nhưng không biết bắt đầu từ đâu? Bạn biết nhiều từ tiếng Anh nhưng gặp khó khăn trong việc xây dựng câu trong tiếng Anh?Bạn biết tại sao không?Lý do là do bạn không học những cụm từ và mẫu câu tiếng Anh thông dụng. Những cụm từ và mẫu câu này được coi là các đơn vị cơ bản giúp bạn tạo ra nhiều câu chính xác hơn trong tiếng Anh.Dưới đây là 100 cụm từ và mẫu câu tiếng Anh thông dụng trong cuộc sống hàng ngày. Mỗi cụm từ tiếng Anh thông thường đi kèm với âm thanh thật và bản dịch giúp bạn học cấu trúc câu tốt hơn và dễ dàng tạo ra câu tiếng Anh hơn.Nếu bạn nắm vững chỉ một cụm từ hoặc mẫu câu tiếng Anh thông dụng, bạn có thể tạo ra hàng trăm câu đúng. Điều này là cách dễ dàng nhất để xây dựng câu trong tiếng Anh..',
       imageURL: 'assets/images/lessons/phrasalverb.png',
-      isLearned: true,
     ),
     Lesson(
       lessonID: 2,
@@ -50,10 +37,8 @@ List<Lesson> createSampleLessons() {
       descriptionTranslation:
           'Bạn đã từng cảm thấy tuyệt vọng khi truyền đạt ý kiến trong giao tiếp do thiếu biểu đạt tiếng Anh? Bạn đã từng bị hiểu lầm vì sử dụng sai cụm từ tiếng Anh để diễn đạt ý tưởng của bạn? Bạn đã từng cảm thấy chán ngấy khi sử dụng cùng một biểu thức hàng nghìn lần trong các ngữ cảnh khác nhau?',
       imageURL: 'assets/images/lessons/pattern.png',
-      isLearned: true,
     ),
     Lesson(
-      isLearned: true,
       lessonID: 3,
       name: 'Common Phrasal Verbs List',
       translation: 'Cụm động từ Tiếng Anh thông dụng',
@@ -64,7 +49,6 @@ List<Lesson> createSampleLessons() {
       imageURL: 'assets/images/lessons/expression.png',
     ),
     Lesson(
-      isLearned: true,
       lessonID: 4,
       name: 'Health Idioms',
       translation: 'Thành ngữ về Sức khỏe',
@@ -75,7 +59,6 @@ List<Lesson> createSampleLessons() {
       imageURL: 'assets/images/lessons/tense.png',
     ),
     Lesson(
-      isLearned: true,
       lessonID: 5,
       name: 'Idioms about Work',
       translation: 'Thành ngữ về Công việc',
@@ -85,7 +68,6 @@ List<Lesson> createSampleLessons() {
       imageURL: 'assets/images/lessons/idiom.png',
     ),
     Lesson(
-      isLearned: true,
       lessonID: 6,
       name: 'Idioms about Time',
       translation: 'Thành ngữ về Thời gian',
@@ -95,7 +77,6 @@ List<Lesson> createSampleLessons() {
       imageURL: 'assets/images/lessons/commonword.png',
     ),
     Lesson(
-      isLearned: true,
       lessonID: 7,
       name: 'Idioms about Decisions',
       translation: 'Thành ngữ về Quyết định',
@@ -106,7 +87,6 @@ List<Lesson> createSampleLessons() {
       imageURL: 'assets/images/lessons/commonword.png',
     ),
     Lesson(
-      isLearned: true,
       lessonID: 8,
       name: 'Idioms about Friendship',
       translation: 'Thành ngữ về Tình bạn',
@@ -117,7 +97,6 @@ List<Lesson> createSampleLessons() {
       imageURL: 'assets/images/lessons/commonword.png',
     ),
     Lesson(
-      isLearned: true,
       lessonID: 9,
       name: 'Idioms about Dreams',
       translation: 'Thành ngữ về Ước mơ',
@@ -128,7 +107,6 @@ List<Lesson> createSampleLessons() {
       imageURL: 'assets/images/lessons/commonword.png',
     ),
     Lesson(
-      isLearned: true,
       lessonID: 10,
       name: 'Travel Idioms',
       translation: 'Thành ngữ về Du lịch',

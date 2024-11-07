@@ -464,10 +464,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 child: ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   scrollDirection: Axis.horizontal,
-                  itemCount: state.categories.length,
+                  // itemCount: state.categories.length,
+                  itemCount: categories.length,
+
                   itemBuilder: (context, index) {
-                    return buildConversationItem(
-                        state.categories[index], index);
+                    final category = categories[index];
+                    return buildConversationItem(category, index);
+
+                    // return buildConversationItem(
+                    //     state.categories[index], index);
                   },
                 ),
               )
@@ -475,21 +480,17 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 ? SizedBox(
                     height: ScreenUtil().screenHeight * 0.4,
                     child: GridView.builder(
-                      scrollDirection: Axis.horizontal, // Cuộn ngang
+                      scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount:
-                            1, // Chỉ 1 phần tử trong mỗi hàng, điều chỉnh nếu muốn
+                        crossAxisCount: 1,
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 16,
-                        childAspectRatio:
-                            1, // Tỷ lệ chiều rộng:chiều cao của phần tử
+                        childAspectRatio: 1,
                       ),
-                      itemCount: categories
-                          .length, // Sử dụng danh sách categories thay thế
+                      itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final category = categories[index];
-                        // Use the category directly instead of accessing state.categories
                         return buildConversationItem(category, index);
                       },
                     ),
@@ -533,105 +534,205 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Widget buildConversationItem(Category category, int index) {
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
-  q
-    return GestureDetector(
-      onTap: () {
-        ref
-            .read(appNavigatorProvider)
-            .navigateTo(AppRoutes.category, arguments: category);
-      },
-      child: Container(
-        width: ScreenUtil().screenWidth * 0.7,
-        margin: EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(
-          color: isDarkTheme ? Colors.grey[800] : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.network(
-                      category.imageUrl ?? '',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: Image.asset(
-                            conversationImages[
-                                index % conversationImages.length],
-                            fit: BoxFit.cover,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+
+    return kIsWeb
+        ? Container(
+            width: ScreenUtil().screenWidth * 0.7,
+            margin: EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: isDarkTheme ? Colors.grey[800] : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
                 ),
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Color(0xFF2E7D32),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'EASY',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: ScreenUtil().setSp(12),
-                        fontWeight: FontWeight.bold,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(12)),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Image.asset(
+                          conversationImages[index % conversationImages.length],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[200],
+                              child: Image.asset(
+                                conversationImages[
+                                    index % conversationImages.length],
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF2E7D32),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'EASY',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: ScreenUtil().setSp(12),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        language == Language.english
+                            ? category.name
+                            : category.translation,
+                        style: TextStyle(
+                          color: isDarkTheme ? Colors.white : Colors.black87,
+                          fontSize: ScreenUtil().setSp(20),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        '3-5 Minutes',
+                        style: TextStyle(
+                          color:
+                              isDarkTheme ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: ScreenUtil().setSp(14),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
+          )
+        : GestureDetector(
+            onTap: () {
+              ref
+                  .read(appNavigatorProvider)
+                  .navigateTo(AppRoutes.category, arguments: category);
+            },
+            child: Container(
+              width: ScreenUtil().screenWidth * 0.7,
+              margin: EdgeInsets.only(right: 16),
+              decoration: BoxDecoration(
+                color: isDarkTheme ? Colors.grey[800] : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    language == Language.english
-                        ? category.name
-                        : category.translation,
-                    style: TextStyle(
-                      color: isDarkTheme ? Colors.white : Colors.black87,
-                      fontSize: ScreenUtil().setSp(20),
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(12)),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.asset(
+                            conversationImages[
+                                index % conversationImages.length],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[200],
+                                child: Image.asset(
+                                  conversationImages[
+                                      index % conversationImages.length],
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 12,
+                        left: 12,
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF2E7D32),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'EASY',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: ScreenUtil().setSp(12),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    '3-5 Minutes',
-                    style: TextStyle(
-                      color: isDarkTheme ? Colors.grey[400] : Colors.grey[600],
-                      fontSize: ScreenUtil().setSp(14),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          language == Language.english
+                              ? category.name
+                              : category.translation,
+                          style: TextStyle(
+                            color: isDarkTheme ? Colors.white : Colors.black87,
+                            fontSize: ScreenUtil().setSp(20),
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '3-5 Minutes',
+                          style: TextStyle(
+                            color: isDarkTheme
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                            fontSize: ScreenUtil().setSp(14),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
+          );
   }
 
   Widget buildAppBar() {
@@ -645,7 +746,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              // Chỉ hiển thị hình đại diện khi không phải trên web
               if (!isWeb)
                 InkWell(
                   onTap: () {
@@ -662,7 +762,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     ),
                   ),
                 ),
-              const Spacer(), // Đẩy nút tìm kiếm sang bên phải
+              const Spacer(),
               if (!isWeb)
                 IconButton(
                   onPressed: () {
