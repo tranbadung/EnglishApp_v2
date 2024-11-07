@@ -43,16 +43,16 @@ class MainMenuView extends ConsumerWidget {
               onTap: (index) =>
                   ref.read(mainMenuViewModelProvider.notifier).changeTab(index),
               items: [
-                _buildBottomNavItem(
-                    Icons.home, 'Khóa học của tôi', state.currentTabIndex == 0),
-                _buildBottomNavItem(Icons.record_voice_over, 'Chương trình học',
+                _buildBottomNavItem(Icons.maps_home_work, 'Khóa học của tôi',
+                    state.currentTabIndex == 0),
+                _buildBottomNavItem(Icons.analytics_sharp, 'Chương trình học',
                     state.currentTabIndex == 1),
                 _buildBottomNavItem(
                     Icons.quiz, 'Đề thi online', state.currentTabIndex == 2),
                 _buildBottomNavItem(Icons.play_lesson, 'Flashcards',
                     state.currentTabIndex == 3),
-                _buildBottomNavItem(Icons.person, 'Kích hoạt tài khoản',
-                    state.currentTabIndex == 4),
+                _buildBottomNavItem(Icons.access_time_filled_rounded,
+                    'Kích hoạt tài khoản', state.currentTabIndex == 4),
               ],
             ),
       floatingActionButton: FloatingActionButton(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +26,9 @@ class ExitBottomSheet extends ConsumerWidget {
     return Wrap(
       children: [
         Container(
-          width: ScreenUtil().screenWidth / 3,
+          width: kIsWeb
+              ? ScreenUtil().screenWidth / 3
+              : ScreenUtil().screenWidth / 1,
           color: ref.watch(themeProvider) ? Colors.grey[900] : Colors.white,
           child: Column(children: [
             const SizedBox(

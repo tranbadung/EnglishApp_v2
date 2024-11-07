@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -75,11 +76,24 @@ class _PhoneticViewState extends ConsumerState<PhoneticView> {
                 children: [
                   _youtubePlayerController == null
                       ? Container(
-                          width: ScreenUtil().screenWidth - 16,
-                          height: ScreenUtil().screenWidth / 16 * 9,
+                          width: kIsWeb
+                              ? ScreenUtil().screenWidth / 4
+                              : ScreenUtil().screenWidth - 16,
+                          height: kIsWeb
+                              ? ScreenUtil().screenWidth / 4
+                              : ScreenUtil().screenWidth / 16 * 9,
                           color: Colors.black,
                         )
-                      : YoutubePlayer(controller: _youtubePlayerController!),
+                      : Container(
+                          width: kIsWeb
+                              ? ScreenUtil().screenWidth / 2
+                              : ScreenUtil().screenWidth - 16,
+                          height: kIsWeb
+                              ? ScreenUtil().screenWidth / 4
+                              : ScreenUtil().screenWidth / 16 * 9,
+                          color: Colors.black,
+                          child: YoutubePlayer(
+                              controller: _youtubePlayerController!)),
                   const SizedBox(
                     height: 16.0,
                   ),
@@ -90,7 +104,9 @@ class _PhoneticViewState extends ConsumerState<PhoneticView> {
                       Text(
                         phonetic.phonetic,
                         style: TextStyle(
-                          fontSize: ScreenUtil().setSp(24),
+                          fontSize: MediaQuery.of(context).size.width < 600
+                              ? 18.0
+                              : 24.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -142,40 +158,49 @@ class _PhoneticViewState extends ConsumerState<PhoneticView> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         vertical: 16, horizontal: 16),
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'Mẹo: ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: ScreenUtil().setSp(18),
-                          color: Theme.of(context).primaryColor,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: phonetic.description,
-                            style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              fontSize: ScreenUtil().setSp(14),
-                              color: isDarkTheme ? Colors.white : Colors.black,
-                            ),
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width *
+                          0.8, // 80% chiều rộng màn hình
+
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Mẹo: ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: ScreenUtil().setSp(18),
+                            color: Theme.of(context).primaryColor,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
+                          children: [
+                            TextSpan(
+                              text: phonetic.description,
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: ScreenUtil().setSp(14),
+                                color:
+                                    isDarkTheme ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   Flexible(child: Container()),
-                  SafeArea(
-                    child: CustomButton(
-                      onTap: () {
-                        _youtubePlayerController!.pauseVideo();
-                        ref.read(appNavigatorProvider).navigateTo(
-                            AppRoutes.pronunciation,
-                            arguments: phonetic.phoneticID);
-                      },
-                      text: AppLocalizations.of(context)!.practiceNow,
-                    ),
-                  ),
+                  if (!kIsWeb)
+                    SafeArea(
+                      child: CustomButton(
+                        width: 200,
+                        onTap: () {
+                          _youtubePlayerController!.pauseVideo();
+                          ref.read(appNavigatorProvider).navigateTo(
+                                AppRoutes.pronunciation,
+                                arguments: phonetic.phoneticID,
+                              );
+                        },
+                        text: AppLocalizations.of(context)!.practiceNow,
+                      ),
+                    )
                 ],
               ),
             ),

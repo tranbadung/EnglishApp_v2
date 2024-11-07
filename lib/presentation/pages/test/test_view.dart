@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:speak_up/presentation/pages/test/question_liestening_view.dart';
 import 'package:speak_up/presentation/pages/test/question_reading_view.dart';
 import 'package:speak_up/presentation/pages/test/question_speaking_view.dart';
- import 'package:speak_up/presentation/pages/test/question_writing_view%20.dart';
+import 'package:speak_up/presentation/pages/test/question_writing_view%20.dart';
 
 class SkillDetailPage extends StatefulWidget {
   final String skillName;
@@ -25,50 +25,53 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Chọn cấp độ cho ${widget.skillName}:',
-              style: TextStyle(
-                fontSize: ScreenUtil().setSp(20),
-                fontWeight: FontWeight.bold,
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Chọn cấp độ cho ${widget.skillName}:',
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(20),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            SizedBox(height: ScreenUtil().setHeight(20)),
-            buildLevelFilterSection(),
-            const Spacer(),
-            Center(
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: selectedLevel.isEmpty
-                      ? null
-                      : () {
-                          // Navigate to the test page if a level is selected
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StartTestPage(
-                                skillName: widget.skillName,
-                                level: selectedLevel,
+              SizedBox(height: ScreenUtil().setHeight(20)),
+              buildLevelFilterSection(),
+              const Spacer(),
+              Center(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: selectedLevel.isEmpty
+                        ? null
+                        : () {
+                            // Navigate to the test page if a level is selected
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StartTestPage(
+                                  skillName: widget.skillName,
+                                  level: selectedLevel,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text(
-                      'Bắt đầu kiểm tra ${widget.skillName}',
-                      style: TextStyle(
-                        fontSize: ScreenUtil().setSp(18),
+                            );
+                          },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text(
+                        'Bắt đầu kiểm tra ${widget.skillName}',
+                        style: TextStyle(
+                          fontSize: ScreenUtil().setSp(18),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -121,47 +124,50 @@ class StartTestPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Bắt đầu kiểm tra $skillName'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Kiểm tra $skillName - cấp độ $level',
-              style: TextStyle(
-                fontSize: ScreenUtil().setSp(22),
-                fontWeight: FontWeight.bold,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Kiểm tra $skillName - cấp độ $level',
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(22),
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: ScreenUtil().setHeight(20)),
-            ElevatedButton(
-              onPressed: () {
-                // Điều hướng đến trang câu hỏi
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      if (skillName == 'Listening') {
-                        return TestQuestionlisteningPage(
-                            skillName: skillName, level: level);
-                      } else if (skillName == 'Reading') {
-                        return TestQuestionReadingPage(
-                            skillName: skillName, level: level);
-                      } else if (skillName == 'Speaking') {
-                        return IELTSSpeakingTestPage(
-                            skillName: skillName, level: level);
-                      } else {
-                        return WritingTestPage(
-                            skillName: skillName, level: level);
-                      }
-                    },
-                  ),
-                );
-              },
-              child: const Text('Bắt đầu kiểm tra ngay'),
-            ),
-          ],
+              SizedBox(height: ScreenUtil().setHeight(20)),
+              ElevatedButton(
+                onPressed: () {
+                  // Điều hướng đến trang câu hỏi
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        if (skillName == 'Listening') {
+                          return TestQuestionlisteningPage(
+                              skillName: skillName, level: level);
+                        } else if (skillName == 'Reading') {
+                          return TestQuestionReadingPage(
+                              skillName: skillName, level: level);
+                        } else if (skillName == 'Speaking') {
+                          return IELTSSpeakingTestPage(
+                              skillName: skillName, level: level);
+                        } else {
+                          return WritingTestPage(
+                              skillName: skillName, level: level);
+                        }
+                      },
+                    ),
+                  );
+                },
+                child: const Text('Bắt đầu kiểm tra ngay'),
+              ),
+            ],
+          ),
         ),
       ),
     );

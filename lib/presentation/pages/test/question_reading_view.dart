@@ -28,7 +28,6 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
   Duration _timeRemaining = const Duration(minutes: 20);
   bool _isTestSubmitted = false;
   int _score = 0;
- 
 
   @override
   void initState() {
@@ -119,13 +118,13 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
     _timer?.cancel();
     int totalScore = 0;
 
-     for (int i = 0; i < _selectedAnswers.length; i++) {
+    for (int i = 0; i < _selectedAnswers.length; i++) {
       if (_selectedAnswers[i] == correctAnswers[i]) {
         totalScore++;
       }
     }
 
-     for (int i = 0; i < _controllers.length; i++) {
+    for (int i = 0; i < _controllers.length; i++) {
       if (_controllers[i].text.toLowerCase().trim() ==
           correctSummaryAnswers[i]!.toLowerCase()) {
         totalScore++;
@@ -152,7 +151,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-             Card(
+            Card(
               margin: const EdgeInsets.all(16),
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -192,7 +191,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                 ),
               ),
             ),
-             Card(
+            Card(
               margin: const EdgeInsets.all(16),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -219,7 +218,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Question ${index + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
                             Row(
                               children: [
                                 Text('Your answer: $userAnswer'),
@@ -242,7 +242,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                 ),
               ),
             ),
-             Card(
+            Card(
               margin: const EdgeInsets.all(16),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -270,7 +270,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Question ${index + 7}',
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
                             Row(
                               children: [
                                 Text('Your answer: $userAnswer'),
@@ -295,8 +296,10 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const LessonView1()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LessonView1()));
               },
               child: const Text('Back to Home'),
             ),

@@ -102,9 +102,11 @@ final List<Map<String, dynamic>> writingTasks = [
   },
 ];
 final List<String> conversationImages = [
-  'assets/images/fitness.jpg',
-  'assets/images/cooking.jpg',
-  'assets/images/account.jpg',
+  'assets/images/active lifestyle app.jpeg',
+  'assets/images/Art.jpeg',
+  'assets/images/Business.jpeg',
+  'assets/images/Comunity.jpeg',
+  'assets/images/Dining.jpeg'
 ];
 const String _imagesPath = 'assets/images';
 
@@ -118,29 +120,159 @@ final List<String> imagePaths = [
 List<Quiz> createSampleQuiz() {
   return [
     Quiz(
-      question: 'What is the capital of France?',
-      answers: ['Paris', 'London', 'Berlin', 'Madrid'],
+      question: 'What is the primary purpose of education?',
+      answers: [
+        'To gain knowledge',
+        'To earn a degree',
+        'To secure a job',
+        'To impress others'
+      ],
       correctAnswerIndex: 0,
     ),
     Quiz(
-      question: 'What is 2 + 2?',
-      answers: ['3', '4', '5', '6'],
+      question: 'Which of the following is a key benefit of reading regularly?',
+      answers: [
+        'Improving physical strength',
+        'Developing cognitive skills',
+        'Increasing appetite',
+        'Enhancing athletic ability'
+      ],
       correctAnswerIndex: 1,
     ),
     Quiz(
-      question: 'Who wrote "Hamlet"?',
-      answers: ['Shakespeare', 'Dickens', 'Hemingway', 'Tolkien'],
+      question: 'Who is the author of the novel "Pride and Prejudice"?',
+      answers: [
+        'Jane Austen',
+        'Mark Twain',
+        'Charles Dickens',
+        'George Orwell'
+      ],
       correctAnswerIndex: 0,
     ),
     Quiz(
-      question: 'What is the largest planet in our Solar System?',
-      answers: ['Earth', 'Mars', 'Jupiter', 'Saturn'],
-      correctAnswerIndex: 2,
+      question: 'What is a common reason people travel abroad?',
+      answers: [
+        'To relax and explore new places',
+        'To reduce job opportunities',
+        'To avoid learning new cultures',
+        'To stay at home'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'What is one major benefit of learning a second language?',
+      answers: [
+        'Improving communication skills',
+        'Becoming less intelligent',
+        'Avoiding social interactions',
+        'Making fewer friends'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'Which of the following is an effective way to reduce stress?',
+      answers: [
+        'Getting enough sleep',
+        'Working longer hours',
+        'Eating junk food',
+        'Ignoring problems'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'Why is teamwork important in a professional setting?',
+      answers: [
+        'It increases individual workload',
+        'It helps achieve common goals',
+        'It limits personal freedom',
+        'It reduces job satisfaction'
+      ],
+      correctAnswerIndex: 1,
+    ),
+    Quiz(
+      question: 'What is a significant cause of climate change?',
+      answers: [
+        'Deforestation',
+        'Increased literacy',
+        'Improved technology',
+        'Reduced energy consumption'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'Which of the following is a benefit of regular exercise?',
+      answers: [
+        'Improves cardiovascular health',
+        'Decreases energy levels',
+        'Increases risk of illness',
+        'Promotes social isolation'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'What is the primary purpose of saving money?',
+      answers: [
+        'To prepare for future needs',
+        'To increase stress levels',
+        'To decrease financial stability',
+        'To reduce career growth'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'Which factor is most important when choosing a career?',
+      answers: [
+        'Salary only',
+        'Personal interests and skills',
+        'Job location',
+        'Appearance of the workplace'
+      ],
+      correctAnswerIndex: 1,
+    ),
+    Quiz(
+      question: 'What is one advantage of volunteering?',
+      answers: [
+        'It can help develop new skills',
+        'It reduces social interaction',
+        'It is financially rewarding',
+        'It limits career growth'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'Why is it important to maintain a balanced diet?',
+      answers: [
+        'To enhance mental and physical health',
+        'To reduce sleep quality',
+        'To decrease physical strength',
+        'To limit energy levels'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'Which of the following is a primary reason for urbanization?',
+      answers: [
+        'Better job opportunities',
+        'Lack of education',
+        'Improved countryside facilities',
+        'Reduced population growth'
+      ],
+      correctAnswerIndex: 0,
+    ),
+    Quiz(
+      question: 'What is a significant challenge in global healthcare today?',
+      answers: [
+        'High literacy rates',
+        'Increasing disease outbreaks',
+        'Decreasing access to technology',
+        'Rising personal incomes'
+      ],
+      correctAnswerIndex: 1,
     ),
   ];
 }
 
-List<FlashCard>getSampleFlashCards = [
+List<FlashCard> getSampleFlashCards = [
   FlashCard(
     userID: "",
     flashcardID: 1,

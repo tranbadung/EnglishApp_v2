@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -150,7 +151,9 @@ class _LessonView1State extends ConsumerState<LessonView1> {
             Expanded(
               child: TabBarView(
                 children: [
-                  buildCoursesSection(state),
+                  kIsWeb
+                      ? buildCoursesSectionWeb(state)
+                      : buildCoursesSectionMobile(state),
                   IpaView(),
                 ],
               ),
@@ -235,7 +238,12 @@ class _LessonView1State extends ConsumerState<LessonView1> {
     );
   }
 
-  Widget buildCoursesSection(HomeState state) {
+  Widget buildCoursesSectionMobile(
+    HomeState state,
+  ) {
+    final lessons = state.lessonsLoadingStatus == LoadingStatus.success
+        ? state.lessons
+        : createSampleLessons();
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,28 +255,60 @@ class _LessonView1State extends ConsumerState<LessonView1> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          state.lessonsLoadingStatus == LoadingStatus.success
-              ? SizedBox(
-                  height: 300,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: state.lessons.length,
-                    itemBuilder: (context, index) {
-                      final lesson = state.lessons[index];
-                      return buildCourseCard(lesson);
-                    },
-                  ),
-                )
-              : SizedBox(
-                  height: 300, // Giữ kích thước giống như danh sách
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 6, // Hiển thị 6 phần tử
-                    itemBuilder: (context, index) {
-                      return buildCourseCardPlaceholder(); // Tạo một hàm mới để tạo phần tử mẫu
-                    },
-                  ),
-                ),
+          SizedBox(
+            height: 300,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: lessons.length,
+              itemBuilder: (context, index) {
+                final lesson = lessons[index];
+                return buildCourseCardMobile(lesson);
+              },
+            ),
+          ),
+          SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Kiểm Tra',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(height: 500, child: buildLevelFilterSection()),
+        ],
+      ),
+    );
+  }
+
+  Widget buildCoursesSectionWeb(
+    HomeState state,
+  ) {
+    final lessons = state.lessonsLoadingStatus == LoadingStatus.success
+        ? state.lessons
+        : createSampleLessons();
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'Khóa học phổ biến',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(
+            height: 300,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: lessons.length,
+              itemBuilder: (context, index) {
+                final lesson = lessons[index];
+                return buildCourseCardWeb(lesson);
+              },
+            ),
+          ),
           SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -340,7 +380,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
     );
   }
 
-  Widget buildCourseCard(Lesson lesson) {
+  Widget buildCourseCardMobile(Lesson lesson) {
     final isDarkTheme = ref.watch(themeProvider);
     final language = ref.watch(appLanguageProvider);
 
@@ -420,6 +460,64 @@ class _LessonView1State extends ConsumerState<LessonView1> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 5),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildCourseCardWeb(Lesson lesson) {
+    final isDarkTheme = ref.watch(themeProvider);
+    final language = ref.watch(appLanguageProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GestureDetector(
+        child: Container(
+          width: 400,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () {},
+                child: Image.asset(
+                  lesson.imageURL,
+                  fit: BoxFit.cover,
+                  width: kIsWeb ? double.infinity * 2 : double.infinity,
+                  height: kIsWeb ? 180 : 180,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lesson.name,
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      lesson.translation,
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ],
                 ),
               ),
