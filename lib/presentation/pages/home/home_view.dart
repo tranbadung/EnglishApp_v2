@@ -187,7 +187,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 final thumbnailPath = reelsState.videoThumbnails.isNotEmpty &&
                         index < reelsState.videoThumbnails.length
                     ? reelsState.videoThumbnails[index]
-                    : 'assets/images/video_placeholder.png'; // Placeholder nếu không có thumbnail
+                    : 'assets/images/video_placeholder.png';  
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -256,7 +256,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               Icons.play_circle_outline,
                               size: isWeb
                                   ? 60
-                                  : 48, // Kích thước icon lớn hơn trên web
+                                  : 48,  
                               color: Colors.white.withOpacity(0.8),
                             ),
                           ),
@@ -272,7 +272,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                 color: Colors.white,
                                 fontSize: ScreenUtil().setSp(isWeb
                                     ? 14
-                                    : 12), // Kích thước chữ lớn hơn trên web
+                                    : 12),  
                                 fontWeight: FontWeight.bold,
                                 shadows: [
                                   Shadow(
@@ -295,7 +295,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
         else
           SizedBox(
             height: ScreenUtil().screenHeight *
-                (isWeb ? 0.4 : 0.3), // Tương tự cho chiều cao
+                (isWeb ? 0.4 : 0.3),  
             child: const Center(
               child: Text('Không có video'),
             ),
@@ -494,37 +494,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         return buildConversationItem(category, index);
                       },
                     ),
-
-                    // return Container(
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.grey[300],
-                    //     borderRadius: BorderRadius.circular(10),
-                    //   ),
-                    //   child: Column(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       // Hiển thị hình ảnh từ imageURL
-                    //       Image.asset(
-                    //         'assets/images/temp_topic.png',
-                    //         // Đảm bảo rằng category.imageURL có giá trị hợp lệ
-                    //         fit: BoxFit.cover,
-                    //       ),
-                    //       SizedBox(
-                    //           height:
-                    //               8), // Khoảng cách giữa hình ảnh và text
-                    //       // Hiển thị tên category
-                    //       Text(
-                    //         category
-                    //             .translation, // Hiển thị translation của category
-                    //         style: TextStyle(
-                    //           fontSize: ScreenUtil().setSp(18),
-                    //           fontWeight: FontWeight.w600,
-                    //         ),
-                    //         textAlign: TextAlign.center,
-                    //       ),
-                    //     ],
-                    //   ),
-                    // );
                   )
                 : Container(),
       ],
@@ -739,8 +708,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final user = FirebaseAuth.instance.currentUser!;
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Kiểm tra nếu là màn hình lớn (web)
-        bool isWeb = constraints.maxWidth > 800;
+         bool isWeb = constraints.maxWidth > 800;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -986,3 +954,4 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 }
+  
