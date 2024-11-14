@@ -8,6 +8,7 @@ class FirestoreRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final String usersCollection = 'users';
   final String userSessionsCollection = 'user_sessions';
+  final String wordCollection = 'Word'; 
 
   FirestoreRepository(this._firestore);
 
@@ -16,6 +17,35 @@ class FirestoreRepository {
     return snapshot.docs
         .map((doc) => doc.data() as Map<String, dynamic>)
         .toList();
+  }
+   Future<List<Map<String, dynamic>>> getAllWords() async {
+    try {
+      QuerySnapshot snapshot = await _firestore.collection(wordCollection).get();
+      return snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+    } catch (e) {
+      print('Error fetching words: $e');
+      return [];
+    }
+  }
+
+  
+
+  Future<String> getUserRole(String userId) async {
+    final doc = await _firestore.collection('users').doc(userId).get();
+
+    // Kiểm tra document có tồn tại không
+    if (!doc.exists) {
+      print('Document không tồn tại với ID: $userId');
+      return 'user'; // Trả về giá trị mặc định
+    }
+
+    // Kiểm tra field role có tồn tại không
+    if (!doc.data()!.containsKey('role')) {
+      print('Field "role" không tồn tại trong document');
+      return 'user';
+    }
+
+    return doc.get('role') ?? 'user';
   }
 
   Future<void> updateLoginTimestamp(User user) async {
@@ -186,31 +216,28 @@ class FirestoreRepository {
     }
   }
 
-  // Get device info for session tracking
-  Future<Map<String, dynamic>> _getDeviceInfo() async {
-    // You would typically use a package like 'device_info_plus' here
-    // For now, returning basic info
+   Future<Map<String, dynamic>> _getDeviceInfo() async {
+ 
     return {
       'platform': 'Flutter',
       'timestamp': DateTime.now().toIso8601String(),
     };
   }
 
-  Future<void> saveUserData(User user) async {
+  Future<void> saveUserData(User user, {String role = 'user'}) async {
     print("Saving user data for: ${user.uid}");
     try {
-      // Data to be saved
       final userData = {
         'uid': user.uid,
         'email': user.email,
         'name': user.displayName ?? '',
         'photoUrl': user.photoURL ?? '',
         'createdAt': FieldValue.serverTimestamp(),
-        'lastLoginAt': FieldValue.serverTimestamp(), // Thời gian đăng nhập
+        'lastLoginAt': FieldValue.serverTimestamp(),
+        'role': role,
       };
       print("Saving user data to collection: users, Document ID: ${user.uid}");
 
-      // Save or update user data in Firestore
       await _firestore
           .collection('users')
           .doc(user.uid)

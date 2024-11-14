@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:speak_up/presentation/pages/lesson/lessonview.dart';
+import 'package:speak_up/presentation/pages/main_menu/main_menu_view.dart';
 
 import '../../../data/models/test.dart';
 
@@ -33,6 +35,29 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
   void initState() {
     super.initState();
     startTimer();
+  }
+
+  Future<void> _saveScore(int correctCount, String skillType) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = '${skillType}_scores';
+      final List<String> savedScores = prefs.getStringList(key) ?? [];
+
+      int totalQuestions = testQuestions.where((q) => q['blank']).length;
+      double percentage = (correctCount / totalQuestions) * 100;
+
+      String scoreEntry =
+          '${percentage.toStringAsFixed(1)}%|$correctCount/$totalQuestions';
+
+      savedScores.insert(0, scoreEntry);
+      if (savedScores.length > 10) {
+        savedScores.removeLast();
+      }
+
+      await prefs.setStringList(key, savedScores);
+    } catch (e) {
+      print('Error saving score: $e');
+    }
   }
 
   void startTimer() {
@@ -134,6 +159,12 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
     setState(() {
       _isTestSubmitted = true;
       _score = totalScore;
+    });
+    _saveScore(totalScore, 'reading').then((_) {
+      int totalQuestions = _selectedAnswers.length + _controllers.length;
+      double percentage = (totalScore / totalQuestions) * 100;
+      print(
+          'Reading score saved: ${percentage.toStringAsFixed(1)}% ($totalScore/$totalQuestions)');
     });
 
     Navigator.push(
@@ -299,7 +330,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const LessonView1()));
+                        builder: (context) => const MainMenuView()));
               },
               child: const Text('Back to Home'),
             ),

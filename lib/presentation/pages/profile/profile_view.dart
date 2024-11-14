@@ -27,23 +27,46 @@ import 'package:speak_up/data/repositories/local_database/local_dtb.dart';
 
 class ActivityViewModel extends StateNotifier<List<String>> {
   final UserActivityManager _userActivityManager;
+  bool _isRecording = false;
 
   ActivityViewModel(this._userActivityManager) : super([]);
 
   Future<void> recordActivity() async {
-    await _userActivityManager.recordUserActivity();
-    await fetchUserActivity();
+    if (_isRecording) return;
+
+    _isRecording = true;
+    try {
+      await _userActivityManager.recordUserActivity();
+      await fetchUserActivity();
+    } finally {
+      _isRecording = false;
+    }
   }
 
   Future<void> fetchUserActivity() async {
     final activityData = await _userActivityManager.getUserActivity();
     List<String> activities = [
-      'Số ngày truy cập: ${activityData['studyStreak']}',
-      'Tổng số giờ học hôm nay: ${activityData['todayStudyHours']}',
+      "Số ngày truy cập: ${activityData['daysVisited']}",
+      "Tổng thời gian học: ${activityData['todayStudySeconds']}",
       'Ngày đăng nhập gần nhất: ${activityData['accessDates']}',
+      'Study Streak: ${activityData['studyStreak']} ngày',
     ];
     state = activities;
-    print(state);
+  }
+}
+
+String _formatStudyTime(int seconds) {
+  if (seconds < 60) {
+    return '$seconds giây';
+  } else if (seconds < 3600) {
+    int minutes = seconds ~/ 60;
+
+    int remainingSeconds = seconds % 60;
+    return '$minutes phút ${remainingSeconds > 0 ? "$remainingSeconds giây" : ""}';
+  } else {
+    int hours = seconds ~/ 3600;
+    int remainingMinutes = (seconds % 3600) ~/ 60;
+    return '$hours giờ ${remainingMinutes > 0 ? "$remainingMinutes phút" : ""}';
   }
 }
 
@@ -53,26 +76,106 @@ final activityViewModelProvider =
   return ActivityViewModel(UserActivityManager(firestoreRepository));
 });
 
-class ProgressTrackingScreen extends ConsumerWidget {
+class ProgressTrackingScreen extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.read(activityViewModelProvider.notifier);
+  ConsumerState<ProgressTrackingScreen> createState() =>
+      _ProgressTrackingScreenState();
+}
 
-    return FutureBuilder(
-      future: viewModel.recordActivity(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
+class _ProgressTrackingScreenState
+    extends ConsumerState<ProgressTrackingScreen> {
+  late int todayIndex;
 
-        final userActivities = ref.watch(activityViewModelProvider);
+  @override
+  void initState() {
+    super.initState();
+    todayIndex = DateTime.now().weekday % 7;
+    Future.microtask(() {
+      ref.read(activityViewModelProvider.notifier).recordActivity();
+    });
+  }
 
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: _buildAppBar(context),
-          body: _buildBody(context, userActivities),
-        );
-      },
+  @override
+  Widget build(BuildContext context) {
+    final userActivities = ref.watch(activityViewModelProvider);
+
+    if (userActivities.isEmpty) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar(context),
+      body: _buildBody(context, userActivities),
+    );
+  }
+
+  Widget _buildStreakCard(List<String> userActivities) {
+    String streakText = userActivities.firstWhere(
+      (activity) => activity.contains("Study Streak"),
+      orElse: () => "Study Streak: 0 ngày",
+    );
+
+    final streak =
+        int.tryParse(RegExp(r'\d+').firstMatch(streakText)?.group(0) ?? "0") ??
+            0;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.purple[300]!, Colors.purple[400]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple[200]!.withOpacity(0.5),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.local_fire_department, color: Colors.white, size: 24),
+              SizedBox(width: 8),
+              Text(
+                'Study Streak',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            '$streak ngày',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Giữ vững thành tích học tập!',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -102,215 +205,191 @@ class ProgressTrackingScreen extends ConsumerWidget {
   Widget _buildBody(BuildContext context, List<String> userActivities) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(),
-          SizedBox(height: 20),
-          _buildStatsRow(userActivities),
-          SizedBox(height: 20),
-          _buildRecentActivities(userActivities),
-          SizedBox(
-            height: 20,
-          ),
-          _buildDayBoxes(todayIndex),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Text(
-      'Theo dõi tiến độ luyện tập!',
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-
-  Widget _buildStatsRow(List<String> userActivities) {
-    // Assuming userActivities contains specific strings, parse the hours and days
-    String daysText = userActivities.firstWhere(
-        (activity) => activity.contains("Số ngày truy cập"),
-        orElse: () => "0");
-    String hoursText = userActivities.firstWhere(
-        (activity) => activity.contains("Tổng số giờ học hôm nay"),
-        orElse: () => "0");
-
-    final days =
-        int.tryParse(RegExp(r'\d+').firstMatch(daysText)?.group(0) ?? "0") ?? 0;
-    final hours =
-        int.tryParse(RegExp(r'\d+').firstMatch(hoursText)?.group(0) ?? "0") ??
-            0;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildStatCard(days.toString(), 'Số ngày duy trì', Colors.blue[300]!),
-        _buildStatCard(
-            hours.toString(), 'Số phút đã học hôm nay', Colors.orange[300]!),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(String value, String label, Color color) {
-    return Container(
-      width: 150,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentActivities(List<String> activities) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Hoạt động gần đây',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 16),
-            activities.isEmpty
-                ? Text('Chưa có hoạt động nào.')
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: activities.length,
-                    separatorBuilder: (context, index) => Divider(),
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.green,
-                          child: Icon(Icons.check, color: Colors.white),
-                        ),
-                        title: Text(activities[index]),
-                      );
-                    },
-                  ),
+            _buildHeader(),
+            SizedBox(height: 20),
+            _buildStatsRow(userActivities),
+            SizedBox(height: 20),
+            _buildStreakCard(userActivities),
+            SizedBox(height: 20),
+            _buildRecentActivities(userActivities),
+            SizedBox(height: 20),
+            _buildDayBoxes(todayIndex),
           ],
         ),
       ),
     );
   }
+}
 
-  // Widget _buildCalendar(List<String> activities) {
-  //   final hasActivities = activities.isNotEmpty;
+Widget _buildHeader() {
+  return Text(
+    'Theo dõi tiến độ luyện tập!',
+    style: TextStyle(
+      color: Colors.black,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+    ),
+  );
+}
 
-  //   return Card(
-  //     elevation: 4,
-  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-  //     child: Padding(
-  //       padding: EdgeInsets.all(16),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           Text(
-  //             'Lịch hoạt động',
-  //             style: TextStyle(
-  //               fontSize: 18,
-  //               fontWeight: FontWeight.bold,
-  //             ),
-  //           ),
-  //           SizedBox(height: 16),
-  //           if (!hasActivities)
-  //             Text(
-  //               'Bạn chưa có hoạt động nào trong 7 ngày qua',
-  //               style: TextStyle(color: Colors.grey),
-  //             ),
-  //           SizedBox(height: 8),
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: _buildDayBoxes(),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
+Widget _buildStatsRow(List<String> userActivities) {
+  String daysText = userActivities.firstWhere(
+    (activity) => activity.contains("Số ngày truy cập"),
+    orElse: () => "0",
+  );
 
-  int todayIndex =
-      DateTime.now().weekday % 7; // 0 for Sunday, 1 for Monday, etc.
-  Widget _buildDayBoxes(int loginDayIndex) {
-    final daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    return Row(
-      mainAxisAlignment:
-          kIsWeb ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
-      children: List.generate(7, (index) {
-        bool isToday = index == loginDayIndex;
-        return Expanded(
-          // Sử dụng Expanded để các phần tử tự động điều chỉnh kích thước
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: kIsWeb ? 10.0 : 2.0,
+  String timeText = userActivities.firstWhere(
+    (activity) => activity.contains("Tổng thời gian học"),
+    orElse: () => "0",
+  );
+
+  final days =
+      int.tryParse(RegExp(r'\d+').firstMatch(daysText)?.group(0) ?? "0") ?? 0;
+  final studySeconds =
+      int.tryParse(RegExp(r'\d+').firstMatch(timeText)?.group(0) ?? "0") ?? 0;
+
+  String formattedTime = _formatStudyTime(studySeconds);
+
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      _buildStatCard(
+        days.toString(),
+        'Số ngày duy trì',
+        Colors.blue[300]!,
+      ),
+      _buildStatCard(
+        formattedTime,
+        'Thời gian học hôm nay',
+        Colors.orange[300]!,
+      ),
+    ],
+  );
+}
+
+Widget _buildStatCard(String value, String label, Color color) {
+  return Container(
+    width: 150,
+    padding: EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: color.withOpacity(0.3),
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildRecentActivities(List<String> activities) {
+  return Card(
+    elevation: 4,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    child: Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Hoạt động gần đây',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-            child: Container(
-              height: kIsWeb ? 100 : 60,
-              decoration: BoxDecoration(
-                color: isToday ? Colors.purple[300] : Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Text(
-                  daysOfWeek[index],
-                  style: TextStyle(
-                    color: isToday ? Colors.white : Colors.grey[600],
-                    fontWeight: FontWeight.bold,
-                  ),
+          ),
+          SizedBox(height: 16),
+          activities.isEmpty
+              ? Text('Chưa có hoạt động nào.')
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: activities.length,
+                  separatorBuilder: (context, index) => Divider(),
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.green,
+                        child: Icon(Icons.check, color: Colors.white),
+                      ),
+                      title: Text(activities[index]),
+                    );
+                  },
+                ),
+        ],
+      ),
+    ),
+  );
+}
+
+int todayIndex = DateTime.now().weekday % 7; // 0 for Sunday, 1 for Monday, etc.
+Widget _buildDayBoxes(int loginDayIndex) {
+  final daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  return Row(
+    mainAxisAlignment:
+        kIsWeb ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
+    children: List.generate(7, (index) {
+      bool isToday = index == loginDayIndex;
+      return Expanded(
+        // Sử dụng Expanded để các phần tử tự động điều chỉnh kích thước
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: kIsWeb ? 10.0 : 2.0,
+          ),
+          child: Container(
+            height: kIsWeb ? 100 : 60,
+            decoration: BoxDecoration(
+              color: isToday ? Colors.purple[300] : Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                daysOfWeek[index],
+                style: TextStyle(
+                  color: isToday ? Colors.white : Colors.grey[600],
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-        );
-      }),
-    );
-  }
+        ),
+      );
+    }),
+  );
+}
 
-  int _getHoursFromActivity(String activity) {
-    final match = RegExp(r'(\d+) giờ').firstMatch(activity);
-    return int.parse(match?.group(1) ?? "0");
-  }
+int _getHoursFromActivity(String activity) {
+  final match = RegExp(r'(\d+) giờ').firstMatch(activity);
+  return int.parse(match?.group(1) ?? "0");
 }
 
 final profileViewModelProvider =
