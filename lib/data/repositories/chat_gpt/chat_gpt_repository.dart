@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
-class WritingResultScreen extends StatelessWidget {
+import 'package:shared_preferences/shared_preferences.dart';
+
+class WritingResultScreen extends StatefulWidget {
   final String feedback1;
   final String feedback2;
   final int wordCount1;
@@ -15,9 +17,39 @@ class WritingResultScreen extends StatelessWidget {
     required this.wordCount2,
   }) : super(key: key);
 
-  // Parse GPT response to extract score and feedback
+  @override
+  _WritingResultScreenState createState() => _WritingResultScreenState();
+}
+
+class _WritingResultScreenState extends State<WritingResultScreen> {
+  double overallScore = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateAndSaveOverallScore();
+  }
+
+  Future<void> saveOverallScore(double overallScore) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('writingScore', overallScore);
+    // await WritingScoreHandler.saveWritingScore(overallScore);
+    print('Saving writing band score: $overallScore');
+  }
+
+  // Calculate and save overall score once
+  Future<void> _calculateAndSaveOverallScore() async {
+    final task1Results = _parseGPTFeedback(widget.feedback1);
+    final task2Results = _parseGPTFeedback(widget.feedback2);
+
+    overallScore = ((task1Results['score'] + task2Results['score']) / 2);
+
+    await saveOverallScore(overallScore);
+    setState(() {});
+  }
+
+  // Parsing feedback
   Map<String, dynamic> _parseGPTFeedback(String feedback) {
-    // Expected format: Score followed by detailed feedback
     RegExp scoreRegex = RegExp(r'(?:Band Score:|Score:)\s*(\d+\.?\d*)');
     var scoreMatch = scoreRegex.firstMatch(feedback);
     double score =
@@ -30,7 +62,6 @@ class WritingResultScreen extends StatelessWidget {
     };
   }
 
-  // Extract individual criteria scores if present in feedback
   Map<String, double> _extractCriteriaScores(String feedback) {
     Map<String, double> scores = {
       'Task Achievement': 0.0,
@@ -48,6 +79,91 @@ class WritingResultScreen extends StatelessWidget {
     }
 
     return scores;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This widget now updates after overallScore is calculated and saved
+    final task1Results = _parseGPTFeedback(widget.feedback1);
+    final task2Results = _parseGPTFeedback(widget.feedback2);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('IELTS Writing Results'),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(16),
+              color: Colors.blue[50],
+              child: Column(
+                children: [
+                  Text(
+                    'Overall Band Score',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue[900],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildScoreCard('Task 1', task1Results['score']),
+                      _buildScoreCard('Task 2', task2Results['score']),
+                      _buildScoreCard('Overall', overallScore),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Word Count: Task 1: ${widget.wordCount1}/150 | Task 2: ${widget.wordCount2}/250',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildCriteriaSection(
+              'Task 1 Criteria Scores',
+              task1Results['criteriaScores'],
+            ),
+            _buildFeedbackSection('Task 1 Feedback', task1Results['feedback']),
+            _buildCriteriaSection(
+              'Task 2 Criteria Scores',
+              task2Results['criteriaScores'],
+            ),
+            _buildFeedbackSection('Task 2 Feedback', task2Results['feedback']),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.popUntil(
+                        context,
+                        ModalRoute.withName('/main_menu'),
+                      );
+                    },
+                    icon: Icon(Icons.home),
+                    label: Text('Back to Home'),
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildScoreCard(String title, double score) {
@@ -169,99 +285,10 @@ class WritingResultScreen extends StatelessWidget {
                 color: Colors.blue[800],
               ),
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 16),
             Text(
               feedback,
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final task1Results = _parseGPTFeedback(feedback1);
-    final task2Results = _parseGPTFeedback(feedback2);
-    final overallScore = ((task1Results['score'] + task2Results['score']) / 2)
-        .toStringAsFixed(1);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('IELTS Writing Results'),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(16),
-              color: Colors.blue[50],
-              child: Column(
-                children: [
-                  Text(
-                    'Overall Band Score',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[900],
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildScoreCard('Task 1', task1Results['score']),
-                      _buildScoreCard('Task 2', task2Results['score']),
-                      _buildScoreCard('Overall', double.parse(overallScore)),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Word Count: Task 1: $wordCount1/150 | Task 2: $wordCount2/250',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.blue[700],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            _buildCriteriaSection(
-              'Task 1 Criteria Scores',
-              task1Results['criteriaScores'],
-            ),
-            _buildFeedbackSection('Task 1 Feedback', task1Results['feedback']),
-            _buildCriteriaSection(
-              'Task 2 Criteria Scores',
-              task2Results['criteriaScores'],
-            ),
-            _buildFeedbackSection('Task 2 Feedback', task2Results['feedback']),
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.popUntil(
-                        context,
-                        ModalRoute.withName('/main_menu'),
-                      );
-                    },
-                    icon: Icon(Icons.home),
-                    label: Text('Back to Home'),
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                  ),
-                ],
-              ),
+              style: TextStyle(fontSize: 16),
             ),
           ],
         ),

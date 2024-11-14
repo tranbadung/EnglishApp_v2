@@ -11,15 +11,16 @@ class AuthenticationRepository {
       this._firebaseAuth, this._googleSignIn, this._firestoreRepository);
 
   Future<UserCredential> createUserWithEmailAndPassword(
-      String email, String password) async {
+      String email, String password,
+      {String role = 'user'}) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Save user data to Firestore via FirestoreRepository
-      await _firestoreRepository.saveUserData(userCredential.user!);
+      // Save user data to Firestore via FirestoreRepository with role
+      await _firestoreRepository.saveUserData(userCredential.user!, role: role);
 
       return userCredential;
     } catch (e) {
@@ -34,13 +35,12 @@ class AuthenticationRepository {
       password: password,
     );
 
-    // Cập nhật thời gian đăng nhập
     await _firestoreRepository.updateLoginTimestamp(userCredential.user!);
 
     return userCredential;
   }
 
-  Future<UserCredential> signInWithGoogle() async {
+  Future<UserCredential> signInWithGoogle({String role = 'user'}) async {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     if (googleUser == null) return Future.error('Google sign in failed');
 
@@ -53,8 +53,7 @@ class AuthenticationRepository {
 
     final userCredential = await _firebaseAuth.signInWithCredential(credential);
 
-    // Save user data to Firestore via FirestoreRepository
-    await _firestoreRepository.saveUserData(userCredential.user!);
+    await _firestoreRepository.saveUserData(userCredential.user!, role: role);
 
     return userCredential;
   }
@@ -79,7 +78,7 @@ class AuthenticationRepository {
     await _firebaseAuth.currentUser!.reauthenticateWithCredential(credential);
   }
 
-   Future<void> signOut() async {
+  Future<void> signOut() async {
     final user = _firebaseAuth.currentUser;
     if (user != null) {
       // Cập nhật thời gian đăng xuất
@@ -87,7 +86,7 @@ class AuthenticationRepository {
     }
 
     await _firebaseAuth.signOut();
-  } 
+  }
 
   bool isSignedIn() {
     return _firebaseAuth.currentUser != null;

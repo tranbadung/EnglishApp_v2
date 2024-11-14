@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class SpeakingResultScreen extends StatelessWidget {
   final String feedback;
@@ -13,9 +13,8 @@ class SpeakingResultScreen extends StatelessWidget {
     required this.partDurations,
   }) : super(key: key);
 
-  // Parse GPT response to extract score and feedback
+  // Parse feedback and extract score and criteria scores
   Map<String, dynamic> _parseGPTFeedback(String feedback) {
-    // Sử dụng try-catch để xử lý lỗi khi định dạng không đúng
     try {
       RegExp scoreRegex = RegExp(r'(?:Band Score:|Score:)\s*(\d+\.?\d*)');
       var scoreMatch = scoreRegex.firstMatch(feedback);
@@ -55,6 +54,12 @@ class SpeakingResultScreen extends StatelessWidget {
     }
 
     return scores;
+  }
+
+  Future<void> _saveScoreToPreferences(double score, String feedback) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('speaking_score', score);
+    await prefs.setString('speaking_feedback', feedback);
   }
 
   Widget _buildScoreCard(String title, double score) {
@@ -250,6 +255,9 @@ class SpeakingResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final results = _parseGPTFeedback(feedback);
     final score = results['score'];
+
+    _saveScoreToPreferences(score, feedback);
+    print(score);
 
     return Scaffold(
       appBar: AppBar(

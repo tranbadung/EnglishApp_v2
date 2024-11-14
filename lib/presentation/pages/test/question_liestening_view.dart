@@ -4,8 +4,8 @@ import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speak_up/data/models/test.dart';
-import 'package:speak_up/presentation/pages/lesson/lesson_view.dart';
 import 'package:speak_up/presentation/pages/lesson/lessonview.dart';
+import 'package:speak_up/presentation/pages/main_menu/main_menu_view.dart';
 
 class TestQuestionlisteningPage extends StatefulWidget {
   final String skillName;
@@ -78,10 +78,40 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
       _correctAnswers = correctCount;
     });
 
+    _saveScore(correctCount, 'listening').then((_) {
+      int totalQuestions = testQuestions.where((q) => q['blank']).length;
+      double percentage = (correctCount / totalQuestions) * 100;
+      print(
+          'Score saved: ${percentage.toStringAsFixed(1)}% ($correctCount/$totalQuestions)');
+    });
+
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => _buildResultScreen()),
     );
+  }
+
+  Future<void> _saveScore(int correctCount, String skillType) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = '${skillType}_scores';
+      final List<String> savedScores = prefs.getStringList(key) ?? [];
+
+      int totalQuestions = testQuestions.where((q) => q['blank']).length;
+      double percentage = (correctCount / totalQuestions) * 100;
+
+      String scoreEntry =
+          '${percentage.toStringAsFixed(1)}%|$correctCount/$totalQuestions';
+
+      savedScores.insert(0, scoreEntry);
+      if (savedScores.length > 10) {
+        savedScores.removeLast();
+      }
+
+      await prefs.setStringList(key, savedScores);
+    } catch (e) {
+      print('Error saving score: $e');
+    }
   }
 
   Future<void> _initAudio() async {
@@ -99,7 +129,6 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
         });
       });
     } catch (e) {
-      print('Error loading audio: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('Không thể tải âm thanh. Vui lòng thử lại sau.')),
@@ -244,8 +273,7 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
   }
 
   Widget buildTestScreen() {
-    int blankIndex =
-        0; // Đặt biến blankIndex ở cấp độ local để theo dõi index của các câu hỏi có chỗ trống
+    int blankIndex = 0;
 
     return Scaffold(
       appBar: AppBar(title: Text('Test Screen')),
@@ -259,7 +287,7 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
                 var questionData = testQuestions[index];
                 if (questionData['blank']) {
                   var widget = buildQuestionCard(questionData, blankIndex);
-                  blankIndex++; // Tăng blankIndex sau khi hiển thị một câu hỏi có chỗ trống
+                  blankIndex++;
                   return widget;
                 }
                 return buildQuestionCard(questionData, index);
@@ -347,14 +375,14 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       'Test Completed!',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text(
                       'Your Score:',
                       style: TextStyle(fontSize: 18),
@@ -380,7 +408,6 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
                 ),
               ),
             ),
-            // Hiển thị chi tiết đáp án
             Card(
               margin: EdgeInsets.all(16),
               child: Padding(
@@ -432,9 +459,9 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
               ),
             ),
             ElevatedButton(
-               onPressed: () {
+              onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => LessonView1()));
+                    MaterialPageRoute(builder: (context) => MainMenuView()));
               },
               child: Text('Back to Home'),
             ),

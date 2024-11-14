@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speak_up/data/providers/app_language_provider.dart';
 import 'package:speak_up/data/providers/app_navigator_provider.dart';
 import 'package:speak_up/data/providers/app_theme_provider.dart';
@@ -24,7 +25,6 @@ import 'package:speak_up/injection/injector.dart';
 import 'package:speak_up/presentation/navigation/app_routes.dart';
 import 'package:speak_up/presentation/pages/home/home_state.dart';
 import 'package:speak_up/presentation/pages/home/home_view_model.dart';
-import 'package:speak_up/presentation/pages/lesson/lesson_view.dart';
 import 'package:speak_up/presentation/pages/reels/reels_state.dart';
 import 'package:speak_up/presentation/pages/reels/reels_view_model.dart';
 import 'package:speak_up/presentation/pages/search/search_view.dart';
@@ -55,6 +55,7 @@ class HomeView extends ConsumerStatefulWidget {
 
 class _HomeViewState extends ConsumerState<HomeView> {
   HomeViewModel get _viewModel => ref.read(homeViewModelProvider.notifier);
+
   Future<void> _init() async {
     if (!mounted) return;
 
@@ -82,10 +83,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
   int _currentBannerPage = 0;
 
   Timer? _bannerTimer;
+  List<String> savedScores = [];
 
   @override
   void initState() {
     super.initState();
+    _loadScore();
+
     Future.delayed(Duration.zero, () async {
       await _init();
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -113,7 +117,51 @@ class _HomeViewState extends ConsumerState<HomeView> {
   void dispose() {
     _bannerTimer?.cancel();
     _bannerController.dispose();
+
     super.dispose();
+  }
+
+  Future<void> _loadScore() async {
+    double scoreListening = await getLatestScore("listening");
+    print('Loaded   score: $scoreListening%');
+
+    double scoreReading = await getLatestScore("reading");
+    print('Loaded   score: $scoreReading%');
+
+    double scoreWriting = await getLatestScore("writing");
+    print('Loaded   score: $scoreWriting%');
+
+    double scoreSpeaking = await getLatestScore("speaking");
+    print('Loaded   score: $scoreWriting%');
+
+    setState(() {
+      _listeningScore = scoreListening;
+      _readingScore = scoreReading;
+      _writingScore = scoreWriting;
+      _speakingScore = scoreSpeaking;
+    });
+  }
+
+  double _listeningScore = 0.0;
+
+  double _writingScore = 0.0;
+  double _readingScore = 0.0;
+  double _speakingScore = 0.0;
+
+  Future<double> getLatestScore(String skill) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = '${skill}_scores'; // Định danh cho mỗi kỹ năng
+    final List<String> savedScores = prefs.getStringList(key) ?? [];
+
+    if (savedScores.isEmpty) {
+      print("No scores found for $skill.");
+      return 0.0;
+    }
+
+    String latestScore = savedScores[0];
+    double percentage = double.tryParse(latestScore.split('%')[0]) ?? 0.0;
+    print("Retrieved score for $skill: $percentage%");
+    return percentage;
   }
 
   @override
@@ -129,8 +177,72 @@ class _HomeViewState extends ConsumerState<HomeView> {
             buildBanner(),
             buildConversations(state),
             buildReels(reelsState),
+            buildSkillsEvaluationTable(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildSkillsEvaluationTable() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Skills Evaluation",
+            style: TextStyle(
+              fontSize: ScreenUtil().setSp(20),
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          SizedBox(height: ScreenUtil().setHeight(12)),
+          Table(
+            columnWidths: const {
+              0: FlexColumnWidth(1),
+              1: FlexColumnWidth(1),
+              2: FlexColumnWidth(2),
+            },
+            border: TableBorder.all(color: Colors.grey, width: 0.5),
+            children: [
+              TableRow(
+                decoration: BoxDecoration(
+                  color:
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                ),
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Skill",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Score %",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Progress",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              buildSkillTableRow("Listenning ", _listeningScore.toInt()),
+              buildSkillTableRow("Reading", _readingScore.toInt()),
+              buildSkillTableRow("Writing", _writingScore.toInt()),
+              buildSkillTableRow("Speaking", _speakingScore.toInt()),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -139,16 +251,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
     Future<bool> checkAssetExists(String assetPath) async {
       try {
         await rootBundle.load(assetPath);
-        print('Asset exists: $assetPath');
         return true;
       } catch (e) {
-        print('Asset does not exist: $assetPath');
-        print('Error: $e');
         return false;
       }
     }
 
-    // Kiểm tra xem ứng dụng đang chạy trên web hay không
     final isWeb = kIsWeb;
 
     return Column(
@@ -187,14 +295,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 final thumbnailPath = reelsState.videoThumbnails.isNotEmpty &&
                         index < reelsState.videoThumbnails.length
                     ? reelsState.videoThumbnails[index]
-                    : 'assets/images/video_placeholder.png'; // Placeholder nếu không có thumbnail
+                    : 'assets/images/video_placeholder.png';
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                   child: GestureDetector(
                     onTap: () async {
-                      print('Checking video path: $videoPath');
-
                       if (videoPath.startsWith('assets/')) {
                         final exists = await checkAssetExists(videoPath);
                         if (!exists) {
@@ -222,7 +328,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
                         }
                       }
 
-                      print('Video exists, navigating to player');
                       Navigator.pushNamed(
                         context,
                         AppRoutes.reels,
@@ -270,9 +375,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: ScreenUtil().setSp(isWeb
-                                    ? 14
-                                    : 12), // Kích thước chữ lớn hơn trên web
+                                fontSize: ScreenUtil().setSp(isWeb ? 14 : 12),
                                 fontWeight: FontWeight.bold,
                                 shadows: [
                                   Shadow(
@@ -294,8 +397,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
           )
         else
           SizedBox(
-            height: ScreenUtil().screenHeight *
-                (isWeb ? 0.4 : 0.3), // Tương tự cho chiều cao
+            height: ScreenUtil().screenHeight * (isWeb ? 0.4 : 0.3),
             child: const Center(
               child: Text('Không có video'),
             ),
@@ -482,7 +584,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     child: GridView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.symmetric(horizontal: 16),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 1,
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 16,
