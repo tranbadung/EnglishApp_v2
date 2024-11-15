@@ -14,7 +14,7 @@ import 'package:speak_up/presentation/pages/chat/chat_view.dart';
 import 'package:speak_up/presentation/pages/home/home_view.dart';
 import 'package:speak_up/presentation/pages/lesson/lessonview.dart';
 import 'package:speak_up/presentation/pages/pattern_lesson_detail/patern_lessson_view.dart';
-import 'package:speak_up/presentation/pages/profile/profile_screen.dart';
+import 'package:speak_up/presentation/pages/admin/Users.dart';
 import 'package:speak_up/presentation/pages/profile/profile_view.dart';
 import 'package:speak_up/presentation/pages/quiz/quiz_view_start.dart';
 import 'main_menu_state.dart';
