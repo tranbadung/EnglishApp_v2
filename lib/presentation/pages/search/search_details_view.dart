@@ -106,17 +106,6 @@ class _WordDetailPageState extends State<WordDetailPage>
                 ),
               ),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : Colors.white,
-                ),
-                onPressed: () {
-                  setState(() => isFavorite = !isFavorite);
-                },
-              ),
-            ],
           ),
           SliverToBoxAdapter(
             child: Column(
@@ -163,16 +152,6 @@ class _WordDetailPageState extends State<WordDetailPage>
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Tính năng chia sẻ sẽ có trong bản cập nhật!')),
-          );
-        },
-        child: Icon(Icons.share),
-        tooltip: 'Chia sẻ',
       ),
     );
   }

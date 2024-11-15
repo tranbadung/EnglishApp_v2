@@ -120,46 +120,76 @@ class _UsersListScreenState extends State<UsersListScreen> {
         ),
         content: Container(
           width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDetailCard(
-                icon: Icons.person,
-                title: 'Tên',
-                value: user['name'] ?? 'Người dùng chưa cập nhật ',
-              ),
-              _buildDetailCard(
-                icon: Icons.access_time_filled_rounded,
-                title: 'Đăng nhập gần nhất',
-                value: _formatTimestamp(user['lastLoginAt']),
-              ),
-              _buildDetailCard(
-                icon: Icons.access_time_filled_rounded,
-                title: 'logout',
-                value: _formatTimestamp(user['lastLogoutAt']),
-              ),
-              _buildDetailCard(
-                icon: Icons.timer,
-                title: 'Số giờ đã học:',
-                value: calculateHoursDifference(
-                    user['lastLoginAt'], user['lastLogoutAt']),
-              ),
-              _buildDetailCard(
-                icon: Icons.email,
-                title: 'Email',
-                value: user['email'] ?? 'Người dùng chưa cập nhật',
-              ),
-              _buildDetailCard(
-                icon: Icons.phone,
-                title: 'Số điện thoại',
-                value: user['phone'] ?? 'Người dùng chưa cập nhật',
-              ),
-              _buildDetailCard(
-                icon: Icons.calendar_today,
-                title: 'createdAt',
-                value: _formatTimestamp(user['createdAt']),
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDetailCard(
+                  icon: Icons.person,
+                  title: 'Tên',
+                  value: user['name'] ?? 'Người dùng chưa cập nhật ',
+                ),
+                _buildDetailCard(
+                  icon: Icons.access_time_filled_rounded,
+                  title: 'Đăng nhập gần nhất',
+                  value: _formatTimestamp(user['lastLoginAt']),
+                ),
+                _buildDetailCard(
+                  icon: Icons.access_time_filled_rounded,
+                  title: 'logout',
+                  value: _formatTimestamp(user['lastLogoutAt']),
+                ),
+                _buildDetailCard(
+                  icon: Icons.timer,
+                  title: 'Số giờ đã học:',
+                  value: calculateHoursDifference(
+                      user['lastLoginAt'], user['lastLogoutAt']),
+                ),
+                _buildDetailCard(
+                  icon: Icons.email,
+                  title: 'Email',
+                  value: user['email'] ?? 'Người dùng chưa cập nhật',
+                ),
+                _buildDetailCard(
+                  icon: Icons.phone,
+                  title: 'Số điện thoại',
+                  value: user['phone'] ?? 'Người dùng chưa cập nhật',
+                ),
+                _buildDetailCard(
+                  icon: Icons.calendar_today,
+                  title: 'createdAt',
+                  value: _formatTimestamp(user['createdAt']),
+                ),
+                _buildDetailCard(
+                  icon: Icons.hearing,
+                  title: 'Listening',
+                  value: user['scores']?['listening'] != null
+                      ? '${user['scores']['listening']}%'
+                      : 'Người dùng chưa làm bài kiểm tra',
+                ),
+                _buildDetailCard(
+                  icon: Icons.menu_book,
+                  title: 'Reading',
+                  value: user['scores']?['reading'] != null
+                      ? '${user['scores']['reading']}%'
+                      : 'Người dùng chưa làm bài kiểm tra',
+                ),
+                _buildDetailCard(
+                  icon: Icons.record_voice_over,
+                  title: 'Speaking',
+                  value: user['scores']?['speaking'] != null
+                      ? '${user['scores']['speaking']}%'
+                      : 'Người dùng chưa làm bài kiểm tra',
+                ),
+                _buildDetailCard(
+                  icon: Icons.edit,
+                  title: 'Writing',
+                  value: user['scores']?['writing'] != null
+                      ? '${user['scores']['writing']}%'
+                      : 'Người dùng chưa làm bài kiểm tra',
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
