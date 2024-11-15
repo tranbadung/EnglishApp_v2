@@ -8,7 +8,7 @@ class FirestoreRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final String usersCollection = 'users';
   final String userSessionsCollection = 'user_sessions';
-  final String wordCollection = 'Word'; 
+  final String wordCollection = 'Word';
 
   FirestoreRepository(this._firestore);
 
@@ -18,30 +18,27 @@ class FirestoreRepository {
         .map((doc) => doc.data() as Map<String, dynamic>)
         .toList();
   }
-   Future<List<Map<String, dynamic>>> getAllWords() async {
+
+  Future<List<Map<String, dynamic>>> getAllWords() async {
     try {
-      QuerySnapshot snapshot = await _firestore.collection(wordCollection).get();
-      return snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+      QuerySnapshot snapshot =
+          await _firestore.collection(wordCollection).get();
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     } catch (e) {
-      print('Error fetching words: $e');
       return [];
     }
   }
 
-  
-
   Future<String> getUserRole(String userId) async {
     final doc = await _firestore.collection('users').doc(userId).get();
 
-    // Kiểm tra document có tồn tại không
     if (!doc.exists) {
-      print('Document không tồn tại với ID: $userId');
-      return 'user'; // Trả về giá trị mặc định
+      return 'user';
     }
 
-    // Kiểm tra field role có tồn tại không
     if (!doc.data()!.containsKey('role')) {
-      print('Field "role" không tồn tại trong document');
       return 'user';
     }
 
@@ -68,7 +65,6 @@ class FirestoreRepository {
       List<Map<String, dynamic>> users = [];
 
       for (var doc in userSnapshot.docs) {
-        // Get the latest session for this user
         final latestSession = await _firestore
             .collection(userSessionsCollection)
             .where('userId', isEqualTo: doc.id)
@@ -91,7 +87,6 @@ class FirestoreRepository {
           userData['isCurrentlyLoggedIn'] = logoutTime == null;
 
           if (logoutTime == null) {
-            // Calculate session duration if user is still logged in
             final duration = DateTime.now().difference(loginTime);
             userData['currentSessionDuration'] = duration;
           }
@@ -102,7 +97,6 @@ class FirestoreRepository {
 
       return users;
     } catch (e) {
-      print('Error getting users: $e');
       throw e;
     }
   }
@@ -112,25 +106,20 @@ class FirestoreRepository {
     try {
       await _firestore.collection(usersCollection).add(userData);
     } catch (e) {
-      print('Error adding user: $e');
       throw e;
     }
   }
 
-  // Update existing user
   Future<void> updateUser(String userId, Map<String, dynamic> userData) async {
     try {
       await _firestore.collection(usersCollection).doc(userId).update(userData);
     } catch (e) {
-      print('Error updating user: $e');
       throw e;
     }
   }
 
-  // Delete user
   Future<void> deleteUser(String userId) async {
     try {
-      // Delete user sessions first
       final sessions = await _firestore
           .collection(userSessionsCollection)
           .where('userId', isEqualTo: userId)
@@ -140,10 +129,8 @@ class FirestoreRepository {
         await session.reference.delete();
       }
 
-      // Then delete the user
       await _firestore.collection(usersCollection).doc(userId).delete();
     } catch (e) {
-      print('Error deleting user: $e');
       throw e;
     }
   }
@@ -157,15 +144,12 @@ class FirestoreRepository {
         'deviceInfo': await _getDeviceInfo(),
       });
     } catch (e) {
-      print('Error recording login: $e');
       throw e;
     }
   }
 
-  // Record user logout
   Future<void> recordUserLogout(String userId) async {
     try {
-      // Find the latest active session for this user
       final activeSession = await _firestore
           .collection(userSessionsCollection)
           .where('userId', isEqualTo: userId)
@@ -185,7 +169,6 @@ class FirestoreRepository {
     }
   }
 
-  // Get user's total session time today
   Future<Duration> getUserTodaySessionTime(String userId) async {
     try {
       final now = DateTime.now();
@@ -211,13 +194,11 @@ class FirestoreRepository {
 
       return totalDuration;
     } catch (e) {
-      print('Error calculating session time: $e');
       throw e;
     }
   }
 
-   Future<Map<String, dynamic>> _getDeviceInfo() async {
- 
+  Future<Map<String, dynamic>> _getDeviceInfo() async {
     return {
       'platform': 'Flutter',
       'timestamp': DateTime.now().toIso8601String(),
@@ -225,7 +206,6 @@ class FirestoreRepository {
   }
 
   Future<void> saveUserData(User user, {String role = 'user'}) async {
-    print("Saving user data for: ${user.uid}");
     try {
       final userData = {
         'uid': user.uid,
@@ -236,27 +216,20 @@ class FirestoreRepository {
         'lastLoginAt': FieldValue.serverTimestamp(),
         'role': role,
       };
-      print("Saving user data to collection: users, Document ID: ${user.uid}");
 
       await _firestore
           .collection('users')
           .doc(user.uid)
           .set(userData, SetOptions(merge: true));
-      print("User data saved successfully");
-    } catch (e) {
-      print("Failed to save user data: $e");
-    }
+    } catch (e) {}
   }
 
   Future<void> updateLogoutTime(String uid) async {
     try {
       await _firestore.collection('users').doc(uid).update({
-        'lastLogoutAt': FieldValue.serverTimestamp(), // Thời gian đăng xuất
+        'lastLogoutAt': FieldValue.serverTimestamp(),
       });
-      print("User logout time updated successfully");
-    } catch (e) {
-      print("Failed to update logout time: $e");
-    }
+    } catch (e) {}
   }
 
   Future<void> calculateUsageTime(String uid) async {
@@ -267,32 +240,33 @@ class FirestoreRepository {
 
       if (lastLoginAt != null && lastLogoutAt != null) {
         final duration = lastLogoutAt.difference(lastLoginAt);
-        print("Time spent in app: ${duration.inMinutes} minutes");
-      } else {
-        print("Login or logout time not available");
-      }
-    } else {
-      print("User document does not exist");
-    }
+      } else {}
+    } else {}
   }
 
-  Future<void> updateUserActivity() async {
+  Future<void> updateUserActivity(
+      {int listeningScore = 0,
+      int speakingScore = 0,
+      int readingScore = 0,
+      int writingScore = 0}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final userId = user.uid;
-      final today =
-          DateTime.now().toIso8601String().split('T')[0]; // Ngày hiện tại
-
-      // Lấy document của người dùng
+      final today = DateTime.now().toIso8601String().split('T')[0];
       DocumentReference userActivityRef =
           _firestore.collection('user_activity').doc(userId);
 
-      // Cập nhật thông tin
       await userActivityRef.set({
         'userId': userId,
-        'accessDates': FieldValue.arrayUnion([today]), // Thêm ngày truy cập
-        'totalHours': FieldValue.increment(1) // Tăng số giờ
-      }, SetOptions(merge: true)); // Sử dụng merge để không ghi đè document
+        'accessDates': FieldValue.arrayUnion([today]),
+        'totalHours': FieldValue.increment(1),
+        'scores': {
+          'listening': FieldValue.increment(listeningScore),
+          'speaking': FieldValue.increment(speakingScore),
+          'reading': FieldValue.increment(readingScore),
+          'writing': FieldValue.increment(writingScore),
+        }
+      }, SetOptions(merge: true));
     }
   }
 
@@ -343,16 +317,13 @@ class FirestoreRepository {
         .where('IdiomTypeID', isEqualTo: process.lectureID)
         .where('UserID', isEqualTo: process.uid)
         .get();
-    //check if idiom process exists
     if (snapshot.docs.isEmpty) {
-      //if not exists, create new idiom process
       await _firestore.collection('idiom_process').add({
         'Progress': process.progress,
         'IdiomTypeID': process.lectureID,
         'UserID': process.uid,
       });
     } else {
-      //if exists, update process
       await _firestore
           .collection('idiom_process')
           .doc(snapshot.docs.first.id)
@@ -366,16 +337,13 @@ class FirestoreRepository {
         .where('PhrasalVerbTypeID', isEqualTo: input.lectureID)
         .where('UserID', isEqualTo: input.uid)
         .get();
-    //check if phrasal verb process exists
     if (snapshot.docs.isEmpty) {
-      //if not exists, create new phrasal verb process
       await _firestore.collection('phrasal_verb_process').add({
         'Progress': input.progress,
         'PhrasalVerbTypeID': input.lectureID,
         'UserID': input.uid,
       });
     } else {
-      //if exists, update process
       await _firestore
           .collection('phrasal_verb_process')
           .doc(snapshot.docs.first.id)
@@ -389,9 +357,7 @@ class FirestoreRepository {
         .where('PatternID', isEqualTo: input.lectureID)
         .where('UserID', isEqualTo: input.uid)
         .get();
-    //check if pattern process exists
     if (snapshot.docs.isEmpty) {
-      //if not exists, create new pattern process
       await _firestore.collection('pattern_process').add({
         'PatternID': input.lectureID,
         'UserID': input.uid,
@@ -405,9 +371,7 @@ class FirestoreRepository {
         .where('UserID', isEqualTo: input.uid)
         .where('PhoneticID', isEqualTo: input.lectureID)
         .get();
-    //check if phonetic process exists
     if (snapshot.docs.isEmpty) {
-      //if not exists, create new phonetic process
       await _firestore.collection('phonetic_process').add({
         'PhoneticID': input.lectureID,
         'UserID': input.uid,
@@ -435,9 +399,7 @@ class FirestoreRepository {
         .where('ExpressionID', isEqualTo: input.lectureID)
         .where('UserID', isEqualTo: input.uid)
         .get();
-    //check if expression process exists
     if (snapshot.docs.isEmpty) {
-      //if not exists, create new expression process
       await _firestore.collection('expression_process').add({
         'ExpressionID': input.lectureID,
         'UserID': input.uid,
@@ -497,7 +459,6 @@ class FirestoreRepository {
   }
 
   Future<void> addFlashCard(FlashCard flashCard, String uid) async {
-    //check contains
     final snapshot = await _firestore
         .collection('flash_cards')
         .where('FlashCardID', isEqualTo: flashCard.flashcardID)
@@ -505,7 +466,6 @@ class FirestoreRepository {
         .where('UserID', isEqualTo: uid)
         .get();
     if (snapshot.docs.isEmpty) {
-      //if not exists, add new flash card
       await _firestore.collection('flash_cards').add({
         'FlashCardID': flashCard.flashcardID,
         'FrontText': flashCard.frontText,
@@ -546,7 +506,6 @@ class FirestoreRepository {
         messagesMap.add(message);
       }
 
-      // if length > 50, then just get last 50 messages
       return messagesMap.length > 50
           ? messagesMap.sublist(messagesMap.length - 50)
           : messagesMap;
