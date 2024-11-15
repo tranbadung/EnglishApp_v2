@@ -8,7 +8,7 @@ part 'azure_speech_client.g.dart';
 
 @RestApi(
     baseUrl:
-        'https://southeastasia.stt.speech.microsoft.com/speech/recognition/conversation/cognitivexervices/v1/')
+        'https://southeastasia.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1/')
 abstract class AzureSpeechClient {
   factory AzureSpeechClient(Dio dio, {String baseUrl}) = _AzureSpeechClient;
 
