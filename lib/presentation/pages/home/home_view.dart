@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,6 @@ import 'package:speak_up/data/providers/app_language_provider.dart';
 import 'package:speak_up/data/providers/app_navigator_provider.dart';
 import 'package:speak_up/data/providers/app_theme_provider.dart';
 import 'package:speak_up/domain/entities/category/category.dart';
-import 'package:speak_up/domain/entities/lesson/lesson.dart';
 import 'package:speak_up/domain/entities/youtube_video/youtube_video.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -123,16 +123,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   Future<void> _loadScore() async {
     double scoreListening = await getLatestScore("listening");
-    print('Loaded   score: $scoreListening%');
-
     double scoreReading = await getLatestScore("reading");
-    print('Loaded   score: $scoreReading%');
-
     double scoreWriting = await getLatestScore("writing");
-    print('Loaded   score: $scoreWriting%');
-
     double scoreSpeaking = await getLatestScore("speaking");
-    print('Loaded   score: $scoreWriting%');
 
     setState(() {
       _listeningScore = scoreListening;
@@ -140,6 +133,47 @@ class _HomeViewState extends ConsumerState<HomeView> {
       _writingScore = scoreWriting;
       _speakingScore = scoreSpeaking;
     });
+
+    await updateUserScore(
+      listeningScore: _listeningScore,
+      readingScore: _readingScore,
+      writingScore: _writingScore,
+      speakingScore: _speakingScore,
+    );
+  }
+
+  Future<void> updateUserScore({
+    double listeningScore = 0.0,
+    double readingScore = 0.0,
+    double writingScore = 0.0,
+    double speakingScore = 0.0,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      DocumentReference userActivityRef =
+          FirebaseFirestore.instance.collection('users').doc(userId);
+
+      print('Updating user score for user: $userId');
+      print('Listening score: $listeningScore');
+      print('Reading score: $readingScore');
+      print('Writing score: $writingScore');
+      print('Speaking score: $speakingScore');
+
+      // Update the user's score information
+      await userActivityRef.set({
+        'userId': userId,
+        'scores': {
+          'listening': listeningScore,
+          'reading': readingScore,
+          'writing': writingScore,
+          'speaking': speakingScore,
+        },
+      }, SetOptions(merge: true));
+
+      print('User score updated successfully');
+    }
   }
 
   double _listeningScore = 0.0;
@@ -150,7 +184,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   Future<double> getLatestScore(String skill) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = '${skill}_scores'; // Định danh cho mỗi kỹ năng
+    final key = '${skill}_scores';  
     final List<String> savedScores = prefs.getStringList(key) ?? [];
 
     if (savedScores.isEmpty) {
