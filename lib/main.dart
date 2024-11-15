@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,27 +20,38 @@ import 'presentation/navigation/app_router.dart';
 final appRootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  // await dotenv.load(fileName: "keys.env");
-
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyCssLzs0KJ2VTHKtdarSOh-bpQ5GAa1Pqg",
+      authDomain: "english-app-a015a.firebaseapp.com",
+      projectId: "english-app-a015a",
+      storageBucket: "english-app-a015a.appspot.com",
+      messagingSenderId: "279938469762",
+      appId: "1:279938469762:web:eeaac7bb4d8ae10510c99b",
+      measurementId: "G-HSVYB3DQGP",
+    ),
+  );
+
   await AppModules.inject();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await injector.allReady();
+
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   runApp(
     const ProviderScope(
       child: MyApp(),
     ),
   );
+
   FlutterNativeSplash.remove();
 }
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkTheme = ref.watch(themeProvider);
