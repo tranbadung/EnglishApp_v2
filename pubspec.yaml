@@ -97,7 +97,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   #ios: true
-  image_path: "assets/app_logos/launcher.png"
+  image_path: "assets/images/banner3.png"
   min_sdk_android: 16 # android min sdk min:16, default 21
 
 #dart run flutter_native_splash:remove
@@ -108,7 +108,7 @@ flutter_native_splash:
 
   # The image parameter allows you to specify an image used in the splash screen.  It must be a
   # png file and should be sized for 4x pixel density.
-  image: assets/app_logos/splash.png
+  image: assets/images/banner3.png
 
   # The branding property allows you to specify an image used as branding in the splash screen.
   # It must be a png file. It is supported for Android, iOS and the Web.  For Android 12,
@@ -250,7 +250,7 @@ flutter:
     - assets/database/
     - assets/reels/
     - assets/audios/test/
- 
+
   fonts:
     - family: SF Pro Display
       fonts:

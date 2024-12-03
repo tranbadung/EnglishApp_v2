@@ -11,7 +11,7 @@
     </intent>
     </queries>
     <application
-        android:label="Speak Up"
+        android:label="English App"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

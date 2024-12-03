@@ -27,7 +27,7 @@ class AboutView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Text(
-                  'Speak Up',
+                  'English App',
                   style: TextStyle(
                     fontSize: ScreenUtil().setSp(24),
                     fontWeight: FontWeight.bold,
@@ -60,7 +60,7 @@ class AboutView extends StatelessWidget {
               const SizedBox(
                 height: 8,
               ),
-              Text('Tu@gmail.com',
+              Text('Nhat_Huy@gmail.com',
                   style: TextStyle(
                     fontSize: ScreenUtil().setSp(16),
                     fontWeight: FontWeight.bold,

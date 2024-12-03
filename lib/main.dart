@@ -61,7 +61,7 @@ class MyApp extends ConsumerWidget {
         builder: (context, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            title: 'Speak Up',
+            title: 'English',
             themeMode: isDarkTheme ? ThemeMode.dark : ThemeMode.light,
             theme: getAppLightTheme(),
             darkTheme: getAppDarkTheme(),
