@@ -22,17 +22,17 @@ final appRootNavigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyCssLzs0KJ2VTHKtdarSOh-bpQ5GAa1Pqg",
-      authDomain: "english-app-a015a.firebaseapp.com",
-      projectId: "english-app-a015a",
-      storageBucket: "english-app-a015a.appspot.com",
-      messagingSenderId: "279938469762",
-      appId: "1:279938469762:web:eeaac7bb4d8ae10510c99b",
-      measurementId: "G-HSVYB3DQGP",
-    ),
-  );
+  // await Firebase.initializeApp(
+  //   options: const FirebaseOptions(
+  //     apiKey: "AIzaSyCssLzs0KJ2VTHKtdarSOh-bpQ5GAa1Pqg",
+  //     authDomain: "english-app-a015a.firebaseapp.com",
+  //     projectId: "english-app-a015a",
+  //     storageBucket: "english-app-a015a.appspot.com",
+  //     messagingSenderId: "279938469762",
+  //     appId: "1:279938469762:web:eeaac7bb4d8ae10510c99b",
+  //     measurementId: "G-HSVYB3DQGP",
+  //   ),
+  // );
 
   await AppModules.inject();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

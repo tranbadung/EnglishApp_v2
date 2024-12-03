@@ -184,7 +184,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   Future<double> getLatestScore(String skill) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = '${skill}_scores';  
+    final key = '${skill}_scores';
     final List<String> savedScores = prefs.getStringList(key) ?? [];
 
     if (savedScores.isEmpty) {
@@ -272,8 +272,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
               ),
               buildSkillTableRow("Listenning ", _listeningScore.toInt()),
               buildSkillTableRow("Reading", _readingScore.toInt()),
-              buildSkillTableRow("Writing", _writingScore.toInt()),
-              buildSkillTableRow("Speaking", _speakingScore.toInt()),
+              // buildSkillTableRow("Writing", _writingScore.toInt()),
+              // buildSkillTableRow("Speaking", _speakingScore.toInt()),
             ],
           ),
         ],
@@ -329,8 +329,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 final thumbnailPath = reelsState.videoThumbnails.isNotEmpty &&
                         index < reelsState.videoThumbnails.length
                     ? reelsState.videoThumbnails[index]
-                     : 'assets/images/video_placeholder.png';
- 
+                    : 'assets/images/video_placeholder.png';
+
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -394,9 +394,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                           Center(
                             child: Icon(
                               Icons.play_circle_outline,
-                              size: isWeb
-                                  ? 60
-                                  : 48,  
+                              size: isWeb ? 60 : 48,
                               color: Colors.white.withOpacity(0.8),
                             ),
                           ),
@@ -410,8 +408,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white,
-                                 fontSize: ScreenUtil().setSp(isWeb ? 14 : 12),
- 
+                                fontSize: ScreenUtil().setSp(isWeb ? 14 : 12),
                                 fontWeight: FontWeight.bold,
                                 shadows: [
                                   Shadow(
@@ -433,8 +430,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
           )
         else
           SizedBox(
-             height: ScreenUtil().screenHeight * (isWeb ? 0.4 : 0.3),
- 
+            height: ScreenUtil().screenHeight * (isWeb ? 0.4 : 0.3),
             child: const Center(
               child: Text('Không có video'),
             ),
@@ -848,7 +844,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final user = FirebaseAuth.instance.currentUser!;
     return LayoutBuilder(
       builder: (context, constraints) {
-         bool isWeb = constraints.maxWidth > 800;
+        bool isWeb = constraints.maxWidth > 800;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1094,4 +1090,3 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 }
-  

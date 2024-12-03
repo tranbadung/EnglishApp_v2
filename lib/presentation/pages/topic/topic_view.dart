@@ -66,7 +66,7 @@ class _TopicViewState extends ConsumerState<TopicView> {
 
   void scrollToCurrentMessage(GlobalKey key) {
     final RenderBox? renderBox =
-    key.currentContext?.findRenderObject() as RenderBox?;
+        key.currentContext?.findRenderObject() as RenderBox?;
     final distance = renderBox?.size.height ?? 0;
     // scroll down distance pixels
     // calculate duration based on distance
@@ -171,13 +171,19 @@ class _TopicViewState extends ConsumerState<TopicView> {
                     )),
               ),
             ),
-            buildCustomButton(AppLocalizations.of(context)!.speak, onTap: () {
-              _viewModel.onPauseDialog();
-              ref.read(appNavigatorProvider).navigateTo(
-                    AppRoutes.pronunciationTopic,
-                    arguments: state.sentences,
-                  );
-            }),
+            buildCustomButton(
+              AppLocalizations.of(context)!.repeat,
+              onTap: _viewModel.onTapRepeatButton,
+              isTurnOn: state.isRepeated,
+            ),
+
+            // buildCustomButton(AppLocalizations.of(context)!.speak, onTap: () {
+            //   _viewModel.onPauseDialog();
+            //   ref.read(appNavigatorProvider).navigateTo(
+            //         AppRoutes.pronunciationTopic,
+            //         arguments: state.sentences,
+            //       );
+            // }),
           ],
         ))
       ],

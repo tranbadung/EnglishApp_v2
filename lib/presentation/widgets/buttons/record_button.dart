@@ -21,23 +21,23 @@ class RecordButton extends StatelessWidget {
       height: ScreenUtil().setHeight(80),
       width: ScreenUtil().setHeight(120),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: isDarkTheme ? Colors.grey[800]! : Colors.black45,
-        ),
-        borderRadius: BorderRadius.circular(32),
-        color: Theme.of(context).primaryColor,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        child: buttonState == ButtonState.loading
-            ? const RecordLoadingIndicator()
-            : Icon(
-                Icons.mic,
-                size: ScreenUtil().setWidth(32),
-                color: Colors.white,
-              ),
-      ),
+      // decoration: BoxDecoration(
+      //   border: Border.all(
+      //     color: isDarkTheme ? Colors.grey[800]! : Colors.black45,
+      //   ),
+      //   borderRadius: BorderRadius.circular(32),
+      //   color: Theme.of(context).primaryColor,
+      // ),
+      // child: InkWell(
+      //   onTap: onTap,
+      //   child: buttonState == ButtonState.loading
+      //       ? const RecordLoadingIndicator()
+      //       : Icon(
+      //           Icons.mic,
+      //           size: ScreenUtil().setWidth(32),
+      //           color: Colors.white,
+      //         ),
+      // ),
     );
   }
 }

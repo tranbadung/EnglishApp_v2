@@ -184,7 +184,7 @@ class _PronunciationPracticeViewState
                       Flexible(
                         child: Text(
                           state.pronunciationAssessmentStatus
-                              .getAssistantText(context), 
+                              .getAssistantText(context),
                           style: TextStyle(
                             fontSize: ScreenUtil().setSp(14),
                             fontWeight: FontWeight.bold,
@@ -236,22 +236,22 @@ class _PronunciationPracticeViewState
                     ),
                   ),
                 ),
-                PronunciationScoreCard(
-                  pronunciationScore: state.speechSentence?.pronScore ?? 0,
-                  accuracyScore: state.speechSentence?.accuracyScore ?? 0,
-                  fluencyScore: state.speechSentence?.fluencyScore ?? 0,
-                  completenessScore:
-                      state.speechSentence?.completenessScore ?? 0,
-                ),
-                const SizedBox(height: 16),
-                PronunciationButtons(
-                    recordPath: state.recordPath,
-                    onPlayRecord: _viewModel.playRecord,
-                    onRecordButtonTap: _viewModel.onRecordButtonTap,
-                    onNextButtonTap: onNextButtonTap,
-                    pronunciationAssessmentStatus:
-                        state.pronunciationAssessmentStatus),
-                const SizedBox(height: 16),
+                // PronunciationScoreCard(
+                //   pronunciationScore: state.speechSentence?.pronScore ?? 0,
+                //   accuracyScore: state.speechSentence?.accuracyScore ?? 0,
+                //   fluencyScore: state.speechSentence?.fluencyScore ?? 0,
+                //   completenessScore:
+                //       state.speechSentence?.completenessScore ?? 0,
+                // ),
+                // const SizedBox(height: 16),
+                // PronunciationButtons(
+                //     recordPath: state.recordPath,
+                //     onPlayRecord: _viewModel.playRecord,
+                //     onRecordButtonTap: _viewModel.onRecordButtonTap,
+                //     onNextButtonTap: onNextButtonTap,
+                //     pronunciationAssessmentStatus:
+                //         state.pronunciationAssessmentStatus),
+                // const SizedBox(height: 16),
               ],
             )
           : state.loadingStatus == LoadingStatus.loading
