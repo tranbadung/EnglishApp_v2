@@ -16,13 +16,13 @@ class Phonetic {
   });
 
   factory Phonetic.initial() => Phonetic(
-        phoneticID: 0,
-        phonetic: '',
-        phoneticType: 0,
-        youtubeVideoId: '',
-        description: '',
-        example: {},
-      );
+    phoneticID: 0,
+    phonetic: '',
+    phoneticType: 0,
+    youtubeVideoId: '',
+    description: '',
+    example: {},
+  );
 }
 
 final List<Phonetic> phoneticData = [
@@ -33,7 +33,7 @@ final List<Phonetic> phoneticData = [
     youtubeVideoId: "TNFKG0yvDx4",
     example: {"it": "/ɪt/", "sit": "/sɪt/", "ship": "/ʃɪp/"},
     description:
-        "Âm 'i' ngắn phát âm giống âm 'i' của tiếng Việt nhưng phát âm nhanh hơn.",
+    "Âm 'i' ngắn phát âm giống âm 'i' của tiếng Việt nhưng phát âm nhanh hơn.",
   ),
   Phonetic(
     phoneticID: 2,
@@ -42,7 +42,7 @@ final List<Phonetic> phoneticData = [
     youtubeVideoId: "eJ7dM_LU9t4",
     example: {"look": "/lʊk/", "cook": "/kʊk/", "foot": "/fʊt/"},
     description:
-        "Âm 'u' ngắn, na ná âm 'ư' của tiếng Việt, không đứng riêng lẻ.",
+    "Âm 'u' ngắn, na ná âm 'ư' của tiếng Việt, không đứng riêng lẻ.",
   ),
   Phonetic(
     phoneticID: 3,
@@ -163,7 +163,7 @@ final List<Phonetic> phoneticData = [
     youtubeVideoId: "LlZcdL7aQGg",
     example: {'yes': '/jɛs/', 'yellow': '/ˈjɛloʊ/', 'yard': '/jɑrd/'},
     description:
-        "Âm 'j' tương tự âm 'y' trong tiếng Việt, phát âm từ vòm họng.",
+    "Âm 'j' tương tự âm 'y' trong tiếng Việt, phát âm từ vòm họng.",
   ),
   Phonetic(
     phoneticID: 18,

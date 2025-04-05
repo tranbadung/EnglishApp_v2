@@ -21,13 +21,13 @@ import 'package:speak_up/presentation/widgets/buttons/custom_button.dart';
 import 'package:speak_up/presentation/widgets/text_fields/custom_text_field.dart';
 
 final signUpViewModelProvider =
-    StateNotifierProvider.autoDispose<SignUpViewModel, SignUpState>(
+StateNotifierProvider.autoDispose<SignUpViewModel, SignUpState>(
         (ref) => SignUpViewModel(
-              injector.get<CreateUserWithEmailAndPasswordUseCase>(),
-              injector.get<SaveUserDataUseCase>(),
-              injector.get<UpdateDisplayNameUseCase>(),
-              injector.get<FirebaseAuth>(),
-            ));
+      injector.get<CreateUserWithEmailAndPasswordUseCase>(),
+      injector.get<SaveUserDataUseCase>(),
+      injector.get<UpdateDisplayNameUseCase>(),
+      injector.get<FirebaseAuth>(),
+    ));
 
 class SignUpView extends ConsumerStatefulWidget {
   const SignUpView({super.key});
@@ -54,77 +54,77 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
 
   void addFetchingListener(BuildContext context) {
     ref.listen(signUpViewModelProvider.select((value) => value.loadingStatus),
-        (previous, next) {
-      if (next == LoadingStatus.success) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            title: Text(
-              AppLocalizations.of(context)!.success,
-              style: TextStyle(
-                fontSize: ScreenUtil().setSp(20),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: Text(
-              AppLocalizations.of(context)!
-                  .yourAccountHasBeenCreatedSuccessfully,
-              style: TextStyle(
-                fontSize: ScreenUtil().setSp(16),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                  ref.read(appNavigatorProvider).navigateTo(
+            (previous, next) {
+          if (next == LoadingStatus.success) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => AlertDialog(
+                title: Text(
+                  AppLocalizations.of(context)!.success,
+                  style: TextStyle(
+                    fontSize: ScreenUtil().setSp(20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                content: Text(
+                  AppLocalizations.of(context)!
+                      .yourAccountHasBeenCreatedSuccessfully,
+                  style: TextStyle(
+                    fontSize: ScreenUtil().setSp(16),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop('dialog');
+                      ref.read(appNavigatorProvider).navigateTo(
                         AppRoutes.mainMenu,
                         shouldClearStack: true,
                       );
-                },
-                child: Text(
-                  'OK',
-                  style: TextStyle(
-                    fontSize: ScreenUtil().setSp(16),
-                    fontWeight: FontWeight.w600,
+                    },
+                    child: Text(
+                      'OK',
+                      style: TextStyle(
+                        fontSize: ScreenUtil().setSp(16),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        );
-      }
-    });
+            );
+          }
+        });
   }
 
   void addErrorMessageListener(BuildContext context) {
     ref.listen(signUpViewModelProvider.select((value) => value.errorCode),
-        (previous, next) {
-      if (next.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              getAppErrorMessage(next, context),
-              style: TextStyle(
-                fontSize: ScreenUtil().setSp(14),
+            (previous, next) {
+          if (next.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  getAppErrorMessage(next, context),
+                  style: TextStyle(
+                    fontSize: ScreenUtil().setSp(14),
+                  ),
+                ),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.all(16.w),
               ),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(16.w),
-          ),
-        );
-      }
-      ref.read(signUpViewModelProvider.notifier).resetError();
-    });
+            );
+          }
+          ref.read(signUpViewModelProvider.notifier).resetError();
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(signUpViewModelProvider);
     addErrorMessageListener(context);
-
+    addFetchingListener(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -183,7 +183,7 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
                         SizedBox(height: 16.h),
                         CustomTextField(
                           hintText:
-                              AppLocalizations.of(context)!.enterYourEmail,
+                          AppLocalizations.of(context)!.enterYourEmail,
                           suffixIcon: const Icon(Icons.email),
                           keyboardType: TextInputType.emailAddress,
                           controller: _emailTextEditingController,
@@ -193,7 +193,7 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
                         SizedBox(height: 16.h),
                         CustomTextField(
                           hintText:
-                              AppLocalizations.of(context)!.enterYourPassword,
+                          AppLocalizations.of(context)!.enterYourPassword,
                           suffixIcon: Icon(
                             state.isPasswordVisible
                                 ? Icons.visibility
@@ -226,10 +226,10 @@ class _SignUpViewState extends ConsumerState<SignUpView> {
                         ref
                             .read(signUpViewModelProvider.notifier)
                             .onSignUpButtonPressed(
-                              _emailTextEditingController.text,
-                              _passwordTextEditingController.text,
-                              _userNameTextEditingController.text,
-                            );
+                          _emailTextEditingController.text,
+                          _passwordTextEditingController.text,
+                          _userNameTextEditingController.text,
+                        );
                       },
                       text: AppLocalizations.of(context)!.continueButton,
                       buttonState: state.loadingStatus.buttonState,

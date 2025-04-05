@@ -30,13 +30,11 @@ class _ReelsViewState extends ConsumerState<ReelsView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Lấy arguments từ navigation
     final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+    ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
     videoList = args['videos'] as List<String>;
     initialIndex = args['initialIndex'] as int;
 
-    // Đặt trang khởi đầu
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (preloadPageController.hasClients) {
         preloadPageController.jumpToPage(initialIndex);
@@ -65,7 +63,10 @@ class _ReelsViewState extends ConsumerState<ReelsView> {
             const Center(
               child: Text(
                 'No videos available',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           // Back button
@@ -122,7 +123,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       _controller = VideoPlayerController.file(File(widget.videoPath));
     }
     _initializeVideoPlayerFuture = _controller.initialize().then((_) {
-       
       _controller.play();
     });
     _controller.setLooping(true);
@@ -148,7 +148,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 child: FittedBox(
                   child: SizedBox(
                     width: _controller.value.size.width,
-                    height: _controller.value.size.height * 4,
+                    height: _controller.value.size.height * 2,
                     child: VideoPlayer(_controller),
                   ),
                 ),

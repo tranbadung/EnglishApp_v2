@@ -19,10 +19,7 @@ class HomeState with _$HomeState {
     @Default(LoadingStatus.initial) LoadingStatus flashCardsLoadingStatus,
     @Default(LoadingStatus.initial)
     LoadingStatus youtubeVideoListsLoadingStatus,
-    @Default(false)
-    bool
-        isUsingLocalVideos,  
-    @Default([])
-    List<String> localVideos,  
+    @Default(false) bool isUsingLocalVideos,
+    @Default([]) List<String> localVideos,
   }) = _HomeState;
 }

@@ -35,7 +35,7 @@ import 'package:speak_up/presentation/widgets/text/pronunciation_score_text.dart
 
 final pronunciationPracticeViewModelProvider = StateNotifierProvider
     .autoDispose<PronunciationPracticeViewModel, PronunciationPracticeState>(
-  (ref) => PronunciationPracticeViewModel(
+      (ref) => PronunciationPracticeViewModel(
     injector.get<GetSentenceListByParentIDUseCase>(),
     injector.get<SpeakFromTextUseCase>(),
     injector.get<SpeakFromTextSlowlyUseCase>(),
@@ -97,13 +97,13 @@ class _PronunciationPracticeViewState
     super.initState();
     Future.delayed(
       Duration.zero,
-      () => _init(),
+          () => _init(),
     );
   }
 
   Future<void> _init() async {
     final args = ModalRoute.of(context)!.settings.arguments
-        as PronunciationPracticeViewArguments;
+    as PronunciationPracticeViewArguments;
     parentID = args.parentID;
     lessonEnum = args.lessonEnum;
     progress = args.progress;
@@ -165,98 +165,98 @@ class _PronunciationPracticeViewState
       ),
       body: state.loadingStatus == LoadingStatus.success
           ? Column(
+        children: [
+          const SizedBox(
+            height: 16,
+          ),
+          Padding(
+            padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
               children: [
+                AppImages.questioner(
+                  width: ScreenUtil().setWidth(48),
+                  height: ScreenUtil().setHeight(48),
+                ),
                 const SizedBox(
-                  height: 16,
+                  width: 16,
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      AppImages.questioner(
-                        width: ScreenUtil().setWidth(48),
-                        height: ScreenUtil().setHeight(48),
-                      ),
-                      const SizedBox(
-                        width: 16,
-                      ),
-                      Flexible(
-                        child: Text(
-                          state.pronunciationAssessmentStatus
-                              .getAssistantText(context),
-                          style: TextStyle(
-                            fontSize: ScreenUtil().setSp(14),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomIconButton(
-                      height: ScreenUtil().setHeight(40),
-                      icon: Icon(
-                        Icons.volume_up_outlined,
-                        size: ScreenUtil().setHeight(18),
-                      ),
-                      onPressed: () {
-                        _viewModel
-                            .speak(state.sentences[state.currentIndex].text);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    CustomIconButton(
-                      height: ScreenUtil().setHeight(40),
-                      icon: AppIcons.snail(
-                        size: ScreenUtil().setHeight(16),
-                        color: isDarkTheme ? Colors.white : Colors.black,
-                      ),
-                      onPressed: () {
-                        _viewModel.speakSlowly(
-                            state.sentences[state.currentIndex].text);
-                      },
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: state.sentences.length,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (BuildContext context, int index) {
-                        return _buildExampleItem(state, index);
-                      },
+                Flexible(
+                  child: Text(
+                    state.pronunciationAssessmentStatus
+                        .getAssistantText(context),
+                    style: TextStyle(
+                      fontSize: ScreenUtil().setSp(14),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                // PronunciationScoreCard(
-                //   pronunciationScore: state.speechSentence?.pronScore ?? 0,
-                //   accuracyScore: state.speechSentence?.accuracyScore ?? 0,
-                //   fluencyScore: state.speechSentence?.fluencyScore ?? 0,
-                //   completenessScore:
-                //       state.speechSentence?.completenessScore ?? 0,
-                // ),
-                // const SizedBox(height: 16),
-                // PronunciationButtons(
-                //     recordPath: state.recordPath,
-                //     onPlayRecord: _viewModel.playRecord,
-                //     onRecordButtonTap: _viewModel.onRecordButtonTap,
-                //     onNextButtonTap: onNextButtonTap,
-                //     pronunciationAssessmentStatus:
-                //         state.pronunciationAssessmentStatus),
-                // const SizedBox(height: 16),
               ],
-            )
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomIconButton(
+                height: ScreenUtil().setHeight(40),
+                icon: Icon(
+                  Icons.volume_up_outlined,
+                  size: ScreenUtil().setHeight(18),
+                ),
+                onPressed: () {
+                  _viewModel
+                      .speak(state.sentences[state.currentIndex].text);
+                },
+              ),
+              const SizedBox(width: 8),
+              CustomIconButton(
+                height: ScreenUtil().setHeight(40),
+                icon: AppIcons.snail(
+                  size: ScreenUtil().setHeight(16),
+                  color: isDarkTheme ? Colors.white : Colors.black,
+                ),
+                onPressed: () {
+                  _viewModel.speakSlowly(
+                      state.sentences[state.currentIndex].text);
+                },
+              ),
+            ],
+          ),
+          Expanded(
+            child: Padding(
+              padding:
+              const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: state.sentences.length,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildExampleItem(state, index);
+                },
+              ),
+            ),
+          ),
+          PronunciationScoreCard(
+            pronunciationScore: state.speechSentence?.pronScore ?? 0,
+            accuracyScore: state.speechSentence?.accuracyScore ?? 0,
+            fluencyScore: state.speechSentence?.fluencyScore ?? 0,
+            completenessScore:
+            state.speechSentence?.completenessScore ?? 0,
+          ),
+          const SizedBox(height: 16),
+          PronunciationButtons(
+              recordPath: state.recordPath,
+              onPlayRecord: _viewModel.playRecord,
+              onRecordButtonTap: _viewModel.onRecordButtonTap,
+              onNextButtonTap: onNextButtonTap,
+              pronunciationAssessmentStatus:
+              state.pronunciationAssessmentStatus),
+          const SizedBox(height: 16),
+        ],
+      )
           : state.loadingStatus == LoadingStatus.loading
-              ? const AppLoadingIndicator()
-              : const AppErrorView(),
+          ? const AppLoadingIndicator()
+          : const AppErrorView(),
     );
   }
 
@@ -277,19 +277,19 @@ class _PronunciationPracticeViewState
         const SizedBox(height: 16),
         state.speechSentence?.words != null
             ? PronunciationScoreText(
-                words: state.speechSentence?.words ?? [],
-                recordPath: state.recordPath ?? '',
-                fontSize: state.sentences[index].text.length < 50
-                    ? ScreenUtil().setSp(20)
-                    : ScreenUtil().setSp(16),
-              )
+          words: state.speechSentence?.words ?? [],
+          recordPath: state.recordPath ?? '',
+          fontSize: state.sentences[index].text.length < 50
+              ? ScreenUtil().setSp(20)
+              : ScreenUtil().setSp(16),
+        )
             : Text(
-                state.sentences[index].translation,
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(18),
-                ),
-              ),
+          state.sentences[index].translation,
+          textAlign: TextAlign.left,
+          style: TextStyle(
+            fontSize: ScreenUtil().setSp(18),
+          ),
+        ),
         Flexible(child: Container()),
       ],
     );

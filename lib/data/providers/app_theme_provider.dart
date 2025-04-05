@@ -4,3 +4,4 @@ import 'package:speak_up/injection/injector.dart';
 
 final themeProvider =
     StateProvider<bool>((ref) => injector.get<GetAppThemeUseCase>().run());
+//

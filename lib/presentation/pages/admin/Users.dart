@@ -11,10 +11,10 @@ class UsersListScreen extends StatefulWidget {
 class _UsersListScreenState extends State<UsersListScreen> {
   List<Map<String, dynamic>> users = [];
   final FirestoreRepository firestoreRepository =
-      FirestoreRepository(FirebaseFirestore.instance);
+  FirestoreRepository(FirebaseFirestore.instance);
   bool isLoading = true;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      GlobalKey<RefreshIndicatorState>();
+  GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -66,8 +66,16 @@ class _UsersListScreenState extends State<UsersListScreen> {
     );
   }
 
-  Future<void> deleteUser(String userId) async {
+  Future<void> deleteUser(Map<String, dynamic> user) async {
     try {
+      // Try to extract uid first, if not available, use userId
+      final userId = user['uid'] ?? user['userId'];
+
+      if (userId == null) {
+        _showErrorSnackBar('Cannot find user ID');
+        return;
+      }
+
       await firestoreRepository.deleteUser(userId);
       await fetchUsers();
       _showSuccessSnackBar('User deleted successfully');
@@ -79,7 +87,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
   String _formatTimestamp(Timestamp? timestamp) {
     if (timestamp == null) return '<1 Tháng Trước';
     final DateTime date =
-        DateTime.fromMillisecondsSinceEpoch(timestamp.seconds * 1000);
+    DateTime.fromMillisecondsSinceEpoch(timestamp.seconds * 1000);
     final DateFormat formatter = DateFormat('dd/MM/yyyy HH:mm', 'vi_VN');
     return formatter.format(date.toLocal());
   }
@@ -224,9 +232,9 @@ class _UsersListScreenState extends State<UsersListScreen> {
   }
 
   Future<void> showEditDialog(Map<String, dynamic> user) async {
-    final nameController = TextEditingController(text: user['name']);
-    final emailController = TextEditingController(text: user['email']);
-    final phoneController = TextEditingController(text: user['phone']);
+    final nameController = TextEditingController(text: user['name'] ?? '');
+    final emailController = TextEditingController(text: user['email'] ?? '');
+    final phoneController = TextEditingController(text: user['phone'] ?? '');
 
     return showDialog(
       context: context,
@@ -267,19 +275,39 @@ class _UsersListScreenState extends State<UsersListScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // Use userId or uid from the original user map
+              final documentId = user['userId'] ?? user['uid'];
+
+              if (documentId == null) {
+                _showErrorSnackBar('Cannot find user document ID');
+                return;
+              }
+
+              final name = nameController.text.isEmpty
+                  ? 'Unnamed User'
+                  : nameController.text;
+              final email = emailController.text.isEmpty
+                  ? 'No Email'
+                  : emailController.text;
+              final phone = phoneController.text.isEmpty
+                  ? 'No Phone'
+                  : phoneController.text;
+
               try {
                 await firestoreRepository.updateUser(
-                  user['id'],
+                  documentId,
                   {
-                    'name': nameController.text,
-                    'email': emailController.text,
-                    'phone': phoneController.text,
+                    'name': name,
+                    'email': email,
+                    // Only add phone if it's not 'No Phone'
+                    if (phone != 'No Phone') 'phone': phone,
                   },
                 );
                 Navigator.pop(context);
                 await fetchUsers();
                 _showSuccessSnackBar('User updated successfully');
               } catch (e) {
+                print('Error updating user: $e');
                 _showErrorSnackBar('Error updating user: $e');
               }
             },
@@ -360,15 +388,22 @@ class _UsersListScreenState extends State<UsersListScreen> {
             onPressed: () async {
               try {
                 await firestoreRepository.addUser({
-                  'name': nameController.text,
-                  'email': emailController.text,
-                  'phone': phoneController.text,
+                  'name': nameController.text.isEmpty
+                      ? 'Unnamed User'
+                      : nameController.text,
+                  'email': emailController.text.isEmpty
+                      ? 'No Email'
+                      : emailController.text,
+                  'phone': phoneController.text.isEmpty
+                      ? 'No Phone'
+                      : phoneController.text,
                   'createdAt': DateTime.now(),
                 });
                 Navigator.pop(context);
                 await fetchUsers();
                 _showSuccessSnackBar('User added successfully');
               } catch (e) {
+                print('Error adding user: $e');
                 _showErrorSnackBar('Error adding user: $e');
               }
             },
@@ -407,202 +442,203 @@ class _UsersListScreenState extends State<UsersListScreen> {
         onRefresh: fetchUsers,
         child: isLoading
             ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).primaryColor,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).primaryColor,
+            ),
+          ),
+        )
+            : users.isEmpty
+            ? Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.people_outline,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "No users found",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey.shade700,
                   ),
                 ),
-              )
-            : users.isEmpty
-                ? Center(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.people_outline,
-                            size: 64,
-                            color: Colors.grey,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            "No users found",
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: showAddDialog,
-                            icon: Icon(Icons.add),
-                            label: Text('Add User'),
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                            ),
-                          ),
-                        ],
+                SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: showAddDialog,
+                  icon: Icon(Icons.add),
+                  label: Text('Add User'),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+            : ListView.builder(
+          itemCount: users.length,
+          padding: EdgeInsets.all(8),
+          itemBuilder: (context, index) {
+            var user = users[index];
+            return Card(
+              elevation: 2,
+              margin: EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: ListTile(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                leading: Hero(
+                  tag: 'avatar_${user['id']}',
+                  child: CircleAvatar(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: Text(
+                      user['name']?[0].toUpperCase() ?? '?',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: users.length,
-                    padding: EdgeInsets.all(8),
-                    itemBuilder: (context, index) {
-                      var user = users[index];
-                      return Card(
-                        elevation: 2,
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          leading: Hero(
-                            tag: 'avatar_${user['id']}',
-                            child: CircleAvatar(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              child: Text(
-                                user['name']?[0].toUpperCase() ?? '?',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            user['name'] ?? 'Người dùng chưa cập nhật',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(Icons.email,
-                                      size: 16, color: Colors.grey),
-                                  SizedBox(width: 4),
-                                  Text(user['email'] ??
-                                      'Người dùng chưa cập nhật'),
-                                ],
-                              ),
-                              SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  Icon(Icons.phone,
-                                      size: 16, color: Colors.grey),
-                                  SizedBox(width: 4),
-                                  Text(user['phone'] ??
-                                      'Người dùng chưa cập nhật'),
-                                ],
-                              ),
-                            ],
-                          ),
-                          trailing: PopupMenuButton(
-                            icon: Icon(Icons.more_vert),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                child: ListTile(
-                                  leading: Icon(Icons.visibility,
-                                      color: Colors.blue),
-                                  title: Text('View'),
-                                  dense: true,
-                                ),
-                                onTap: () => Future.delayed(
-                                  Duration(seconds: 0),
-                                  () => showUserDetails(user),
-                                ),
-                              ),
-                              PopupMenuItem(
-                                child: ListTile(
-                                  leading:
-                                      Icon(Icons.edit, color: Colors.orange),
-                                  title: Text('Edit'),
-                                  dense: true,
-                                ),
-                                onTap: () => Future.delayed(
-                                  Duration(seconds: 0),
-                                  () => showEditDialog(user),
-                                ),
-                              ),
-                              PopupMenuItem(
-                                child: ListTile(
-                                  leading:
-                                      Icon(Icons.delete, color: Colors.red),
-                                  title: Text('Delete',
-                                      style: TextStyle(color: Colors.red)),
-                                  dense: true,
-                                ),
-                                onTap: () => showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    title: Row(
-                                      children: [
-                                        Icon(Icons.warning, color: Colors.red),
-                                        SizedBox(width: 8),
-                                        Text('Confirm Delete'),
-                                      ],
-                                    ),
-                                    content: Text(
-                                      'Are you sure you want to delete this user?',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text('Cancel'),
-                                        style: TextButton.styleFrom(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          deleteUser(user['id']);
-                                        },
-                                        child: Text('Delete'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.red,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          onTap: () => showUserDetails(user),
-                        ),
-                      );
-                    },
                   ),
+                ),
+                title: Text(
+                  user['name'] ?? 'Người dùng chưa cập nhật',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.email,
+                            size: 16, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Text(user['email'] ??
+                            'Người dùng chưa cập nhật'),
+                      ],
+                    ),
+                    SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(Icons.phone,
+                            size: 16, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Text(user['phone'] ??
+                            'Người dùng chưa cập nhật'),
+                      ],
+                    ),
+                  ],
+                ),
+                trailing: PopupMenuButton(
+                  icon: Icon(Icons.more_vert),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      child: ListTile(
+                        leading: Icon(Icons.visibility,
+                            color: Colors.blue),
+                        title: Text('View'),
+                        dense: true,
+                      ),
+                      onTap: () => Future.delayed(
+                        Duration(seconds: 0),
+                            () => showUserDetails(user),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      child: ListTile(
+                        leading:
+                        Icon(Icons.edit, color: Colors.orange),
+                        title: Text('Edit'),
+                        dense: true,
+                      ),
+                      onTap: () => Future.delayed(
+                        Duration(seconds: 0),
+                            () => showEditDialog(user),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      child: ListTile(
+                        leading:
+                        Icon(Icons.delete, color: Colors.red),
+                        title: Text('Delete',
+                            style: TextStyle(color: Colors.red)),
+                        dense: true,
+                      ),
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: Row(
+                            children: [
+                              Icon(Icons.warning, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Confirm Delete'),
+                            ],
+                          ),
+                          content: Text(
+                            'Are you sure you want to delete this user?',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('Cancel'),
+                              style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                deleteUser(
+                                    user); // Pass the entire user map
+                              },
+                              child: Text('Delete'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                onTap: () => showUserDetails(user),
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: AnimatedScale(
         scale: isLoading ? 0.0 : 1.0,

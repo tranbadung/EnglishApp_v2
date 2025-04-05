@@ -24,6 +24,7 @@ dependencies:
   flutter_riverpod: ^2.3.6
   get_it: ^7.6.0
 
+
   # JSON Serialization and Immutability
   freezed: ^2.3.5
   json_annotation: ^4.8.1
@@ -84,6 +85,30 @@ dependencies:
   speech_to_text: ^7.0.0
   permission_handler: ^11.3.1
   fl_chart: ^0.69.0
+
+  file_picker: ^8.1.4
+
+ #////
+  get: ^4.6.6
+  google_generative_ai: ^0.4.3
+
+  # For Google Language Translate
+  translator_plus: ^1.0.1
+  appwrite:
+  lottie: ^3.1.2
+  flutter_animate: ^4.5.0
+  animated_text_kit: ^4.2.2
+  easy_audience_network: ^0.0.6
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  dart_openai: ^5.1.0
+  cached_network_image: ^3.3.1
+  gallery_saver_updated: ^3.0.0
+  share_plus:
+
+  flutter_sound: ^9.2.13
+
+
 
 dev_dependencies:
   flutter_test:
@@ -250,7 +275,10 @@ flutter:
     - assets/database/
     - assets/reels/
     - assets/audios/test/
-
+    - assets/images/
+    - assets/lottie/
+    - assets/images/bear_closed_mouth.png
+    - assets/images/bear_open_mouth.png
   fonts:
     - family: SF Pro Display
       fonts:

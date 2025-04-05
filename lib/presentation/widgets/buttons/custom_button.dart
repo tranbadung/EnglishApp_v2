@@ -17,6 +17,11 @@ class CustomButton extends StatelessWidget {
   final ButtonState buttonState;
   final double? textSize;
 
+  // New properties
+  final Gradient? gradient;
+  final Color? shadowColor;
+  final double? borderRadius;
+
   const CustomButton({
     super.key,
     this.height,
@@ -31,6 +36,9 @@ class CustomButton extends StatelessWidget {
     this.marginVertical = 10,
     this.buttonState = ButtonState.normal,
     this.textSize,
+    this.gradient,
+    this.shadowColor,
+    this.borderRadius,
   });
 
   @override
@@ -38,26 +46,28 @@ class CustomButton extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: ScreenUtil().setWidth(8),
-        vertical:
-            ScreenUtil().setHeight(ScreenUtil().setHeight(marginVertical)),
+        vertical: ScreenUtil().setHeight(marginVertical),
       ),
       height: height != null
           ? ScreenUtil().setHeight(height!)
           : ScreenUtil().setHeight(50),
       width: width ?? ScreenUtil().screenWidth * 0.8,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color:
-              buttonState == ButtonState.disabled ? Colors.grey : buttonColor,
-          border: border,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey[800]!.withOpacity(0.5),
-              spreadRadius: 0,
-              blurRadius: 4,
-              offset: const Offset(0, 4),
-            ),
-          ]),
+        borderRadius: BorderRadius.circular(borderRadius ?? 10),
+        color: gradient == null
+            ? (buttonState == ButtonState.disabled ? Colors.grey : buttonColor)
+            : null,
+        gradient: gradient,
+        border: border,
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor ?? Colors.grey[800]!.withOpacity(0.5),
+            spreadRadius: 0,
+            blurRadius: 4,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: InkWell(
         onTap: buttonState == ButtonState.normal ? onTap : null,
         child: Center(
@@ -75,23 +85,23 @@ class CustomButton extends StatelessWidget {
                 ),
               buttonState == ButtonState.loading
                   ? SizedBox(
-                      height: kIsWeb
-                          ? ScreenUtil().setHeight(10)
-                          : ScreenUtil().setHeight(15),
-                      width: ScreenUtil().setHeight(15),
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                      ),
-                    )
+                height: kIsWeb
+                    ? ScreenUtil().setHeight(10)
+                    : ScreenUtil().setHeight(15),
+                width: ScreenUtil().setHeight(15),
+                child: const CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              )
                   : Text(
-                      text,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: textSize ?? ScreenUtil().setSp(16),
-                        fontWeight: fontWeight,
-                      ),
-                    ),
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize ?? ScreenUtil().setSp(16),
+                  fontWeight: fontWeight,
+                ),
+              ),
             ],
           ),
         ),

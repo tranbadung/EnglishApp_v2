@@ -26,13 +26,13 @@ import 'package:speak_up/presentation/utilities/enums/loading_status.dart';
 import '../../../domain/use_cases/local_database/get_lesson_list_use_case.dart';
 
 final homeViewModelProvider =
-    StateNotifierProvider<HomeViewModel, HomeState>((ref) => HomeViewModel(
-          injector.get<GetLessonListUseCase>(),
-          injector.get<GetCategoryListUseCase>(),
-          injector.get<GetFlashCardListUseCase>(),
-          injector.get<GetYoutubePLayListIdListUseCase>(),
-          injector.get<GetYoutubePlaylistByIdUseCase>(),
-        ));
+StateNotifierProvider<HomeViewModel, HomeState>((ref) => HomeViewModel(
+  injector.get<GetLessonListUseCase>(),
+  injector.get<GetCategoryListUseCase>(),
+  injector.get<GetFlashCardListUseCase>(),
+  injector.get<GetYoutubePLayListIdListUseCase>(),
+  injector.get<GetYoutubePlaylistByIdUseCase>(),
+));
 
 class LessonView1 extends ConsumerStatefulWidget {
   const LessonView1({super.key});
@@ -125,7 +125,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
             Text(
               'Lesson',
               style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
             SizedBox(width: 10),
           ],
@@ -239,8 +239,8 @@ class _LessonView1State extends ConsumerState<LessonView1> {
   }
 
   Widget buildCoursesSectionMobile(
-    HomeState state,
-  ) {
+      HomeState state,
+      ) {
     final lessons = state.lessonsLoadingStatus == LoadingStatus.success
         ? state.lessons
         : createSampleLessons();
@@ -281,8 +281,8 @@ class _LessonView1State extends ConsumerState<LessonView1> {
   }
 
   Widget buildCoursesSectionWeb(
-    HomeState state,
-  ) {
+      HomeState state,
+      ) {
     final lessons = state.lessonsLoadingStatus == LoadingStatus.success
         ? state.lessons
         : createSampleLessons();
@@ -511,7 +511,7 @@ class _LessonView1State extends ConsumerState<LessonView1> {
                     Text(
                       lesson.name,
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 5),
                     Text(

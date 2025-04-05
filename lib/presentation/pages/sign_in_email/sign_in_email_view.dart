@@ -19,10 +19,10 @@ import 'package:speak_up/presentation/widgets/loading_indicator/app_loading_indi
 import 'package:speak_up/presentation/widgets/text_fields/custom_text_field.dart';
 
 final signInEmailViewModelProvider =
-    StateNotifierProvider.autoDispose<SignInEmailViewModel, SignInEmailState>(
+StateNotifierProvider.autoDispose<SignInEmailViewModel, SignInEmailState>(
         (ref) => SignInEmailViewModel(
-              injector.get<SignInWithEmailAndPasswordUseCase>(),
-            ));
+      injector.get<SignInWithEmailAndPasswordUseCase>(),
+    ));
 
 class SignInEmailView extends ConsumerStatefulWidget {
   const SignInEmailView({super.key});
@@ -47,31 +47,31 @@ class _SignInEmailViewState extends ConsumerState<SignInEmailView> {
   void addFetchDataListener() {
     ref.listen(
         signInEmailViewModelProvider.select((value) => value.loadingStatus),
-        (previous, next) {
-      if (next == LoadingStatus.success) {
-        Future.delayed(const Duration(seconds: 1), () {
-          ref.read(appNavigatorProvider).navigateTo(
+            (previous, next) {
+          if (next == LoadingStatus.success) {
+            Future.delayed(const Duration(seconds: 1), () {
+              ref.read(appNavigatorProvider).navigateTo(
                 AppRoutes.mainMenu,
                 shouldClearStack: true,
               );
+            });
+          }
         });
-      }
-    });
   }
 
   void addErrorMessageListener(BuildContext context) {
     ref.listen(signInEmailViewModelProvider.select((value) => value.errorCode),
-        (previous, next) {
-      if (next.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(getAppErrorMessage(next, context)),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      ref.read(signInEmailViewModelProvider.notifier).resetError();
-    });
+            (previous, next) {
+          if (next.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(getAppErrorMessage(next, context)),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          ref.read(signInEmailViewModelProvider.notifier).resetError();
+        });
   }
 
   @override
@@ -84,111 +84,137 @@ class _SignInEmailViewState extends ConsumerState<SignInEmailView> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         leading: const AppBackButton(),
+        elevation: 2,
+        backgroundColor: Colors.white,
+        shadowColor: Colors.grey.shade200,
       ),
       body: Stack(
         children: [
-          Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  AppImages.signInEmail(
-                    width: kIsWeb
-                        ? ScreenUtil().screenWidth * 0.25
-                        : ScreenUtil().screenWidth * 0.93,
-                    boxFit: BoxFit.fitWidth,
-                  ),
-                  Row(
-                    mainAxisAlignment: kIsWeb
-                        ? MainAxisAlignment.center
-                        : MainAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16, horizontal: 30),
-                        child: Text(
-                          AppLocalizations.of(context)!.signInWithYourEmail,
-                          style: TextStyle(
-                            fontSize: kIsWeb
-                                ? ScreenUtil().setSp(20)
-                                : ScreenUtil().setSp(24),
-                            fontWeight: FontWeight.bold,
+          Padding(
+            padding: EdgeInsets.all(20.w),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade200,
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: AppImages.signInEmail(
+                        width: kIsWeb
+                            ? ScreenUtil().screenWidth * 0.25
+                            : ScreenUtil().screenWidth * 0.93,
+                        boxFit: BoxFit.fitWidth,
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 30),
+                          child: Text(
+                            AppLocalizations.of(context)!.signInWithYourEmail,
+                            style: TextStyle(
+                              fontSize: kIsWeb
+                                  ? ScreenUtil().setSp(20)
+                                  : ScreenUtil().setSp(24),
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueGrey,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  CustomTextField(
-                    aboveText: AppLocalizations.of(context)!.emailAddress,
-                    hintText: AppLocalizations.of(context)!.enterYourEmail,
-                    suffixIcon: const Icon(Icons.email),
-                    keyboardType: TextInputType.emailAddress,
-                    controller: _emailTextEditingController,
-                    validatorType: ValidatorType.email,
-                    context: context,
-                  ),
-                  CustomTextField(
-                    aboveText: AppLocalizations.of(context)!.password,
-                    hintText: AppLocalizations.of(context)!.enterYourPassword,
-                    keyboardType: TextInputType.visiblePassword,
-                    controller: _passwordTextEditingController,
-                    errorMaxLines: 2,
-                    validatorType: ValidatorType.password,
-                    context: context,
-                    obscureText: !state.isPasswordVisible,
-                    onSuffixIconTap: () {
-                      ref
-                          .read(signInEmailViewModelProvider.notifier)
-                          .onPasswordVisibilityPressed();
-                    },
-                    suffixIcon: Icon(state.isPasswordVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off),
-                  ),
-                  CustomButton(
-                    marginVertical: 30,
-                    text: AppLocalizations.of(context)!.signIn,
-                    buttonState: state.loadingStatus.buttonState,
-                    onTap: () {
-                      if (!_formKey.currentState!.validate()) return;
-                      ref
-                          .read(signInEmailViewModelProvider.notifier)
-                          .onSignInButtonPressed(
-                              _emailTextEditingController.text,
-                              _passwordTextEditingController.text);
-                    },
-                    height: kIsWeb
-                        ? ScreenUtil().setHeight(56)
-                        : ScreenUtil().setHeight(56),
-                    width: kIsWeb
-                        ? ScreenUtil().setWidth(200)
-                        : ScreenUtil().setWidth(200),
-                  ),
-                  SizedBox(
-                    height: ScreenUtil().setHeight(32),
-                  ),
-                  Text(
-                    AppLocalizations.of(context)!.dontHaveAnAccount,
-                    style: TextStyle(
-                      fontSize: ScreenUtil().setSp(16),
+                      ],
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      ref.read(appNavigatorProvider).navigateTo(
-                            AppRoutes.signUpEmail,
-                          );
-                    },
-                    child: Text(
-                      AppLocalizations.of(context)!.signUp,
+                    CustomTextField(
+                      aboveText: AppLocalizations.of(context)!.emailAddress,
+                      hintText: AppLocalizations.of(context)!.enterYourEmail,
+                      suffixIcon: const Icon(Icons.email, color: Colors.blue),
+                      keyboardType: TextInputType.emailAddress,
+                      controller: _emailTextEditingController,
+                      validatorType: ValidatorType.email,
+                      context: context,
+                    ),
+                    SizedBox(height: 16.h),
+                    CustomTextField(
+                      aboveText: AppLocalizations.of(context)!.password,
+                      hintText: AppLocalizations.of(context)!.enterYourPassword,
+                      keyboardType: TextInputType.visiblePassword,
+                      controller: _passwordTextEditingController,
+                      errorMaxLines: 2,
+                      validatorType: ValidatorType.password,
+                      context: context,
+                      obscureText: !state.isPasswordVisible,
+                      onSuffixIconTap: () {
+                        ref
+                            .read(signInEmailViewModelProvider.notifier)
+                            .onPasswordVisibilityPressed();
+                      },
+                      suffixIcon: Icon(
+                        state.isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    SizedBox(height: 30.h),
+                    CustomButton(
+                      marginVertical: 16,
+                      text: AppLocalizations.of(context)!.signIn,
+                      buttonState: state.loadingStatus.buttonState,
+                      onTap: () {
+                        if (!_formKey.currentState!.validate()) return;
+                        ref
+                            .read(signInEmailViewModelProvider.notifier)
+                            .onSignInButtonPressed(
+                            _emailTextEditingController.text,
+                            _passwordTextEditingController.text);
+                      },
+                      height: 56.h,
+                      width: 200.w,
+                      gradient: const LinearGradient(
+                        colors: [Colors.blue, Colors.lightBlueAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: 30.r,
+                      shadowColor: Colors.blue.shade200,
+                    ),
+                    SizedBox(height: 32.h),
+                    Text(
+                      AppLocalizations.of(context)!.dontHaveAnAccount,
                       style: TextStyle(
-                        fontSize: ScreenUtil().setSp(16),
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16.sp,
+                        color: Colors.grey.shade600,
                       ),
                     ),
-                  ),
-                ],
+                    TextButton(
+                      onPressed: () {
+                        ref.read(appNavigatorProvider).navigateTo(
+                          AppRoutes.signUpEmail,
+                        );
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.signUp,
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

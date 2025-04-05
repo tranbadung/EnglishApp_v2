@@ -31,7 +31,7 @@ class _PhoneticViewState extends ConsumerState<PhoneticView> {
     super.initState();
     Future.delayed(
       Duration.zero,
-      () => _init(),
+          () => _init(),
     );
   }
 
@@ -68,142 +68,142 @@ class _PhoneticViewState extends ConsumerState<PhoneticView> {
       ),
       body: phonetic.youtubeVideoId.isEmpty
           ? const Center(
-              child: AppLoadingIndicator(),
-            )
+        child: AppLoadingIndicator(),
+      )
           : Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              child: Column(
-                children: [
-                  _youtubePlayerController == null
-                      ? Container(
-                          width: kIsWeb
-                              ? ScreenUtil().screenWidth / 4
-                              : ScreenUtil().screenWidth - 16,
-                          height: kIsWeb
-                              ? ScreenUtil().screenWidth / 4
-                              : ScreenUtil().screenWidth / 16 * 9,
-                          color: Colors.black,
-                        )
-                      : Container(
-                          width: kIsWeb
-                              ? ScreenUtil().screenWidth / 2
-                              : ScreenUtil().screenWidth - 16,
-                          height: kIsWeb
-                              ? ScreenUtil().screenWidth / 4
-                              : ScreenUtil().screenWidth / 16 * 9,
-                          color: Colors.black,
-                          child: YoutubePlayer(
-                              controller: _youtubePlayerController!)),
-                  const SizedBox(
-                    height: 16.0,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Column(
+          children: [
+            _youtubePlayerController == null
+                ? Container(
+              width: kIsWeb
+                  ? ScreenUtil().screenWidth / 4
+                  : ScreenUtil().screenWidth - 16,
+              height: kIsWeb
+                  ? ScreenUtil().screenWidth / 4
+                  : ScreenUtil().screenWidth / 16 * 9,
+              color: Colors.black,
+            )
+                : Container(
+                width: kIsWeb
+                    ? ScreenUtil().screenWidth / 2
+                    : ScreenUtil().screenWidth - 16,
+                height: kIsWeb
+                    ? ScreenUtil().screenWidth / 4
+                    : ScreenUtil().screenWidth / 16 * 9,
+                color: Colors.black,
+                child: YoutubePlayer(
+                    controller: _youtubePlayerController!)),
+            const SizedBox(
+              height: 16.0,
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  phonetic.phonetic,
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width < 600
+                        ? 18.0
+                        : 24.0,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        phonetic.phonetic,
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width < 600
-                              ? 18.0
-                              : 24.0,
-                          fontWeight: FontWeight.bold,
-                        ),
+                ),
+                CustomIconButton(
+                  height: ScreenUtil().setHeight(40),
+                  icon: Icon(
+                    Icons.volume_up_outlined,
+                    size: ScreenUtil().setHeight(18),
+                  ),
+                  onPressed: () {
+                    String audioPath =
+                        'audios/ipa/${phonetic.phoneticID}.mp3';
+                    injector
+                        .get<PlayAudioFromAssetUseCase>()
+                        .run(audioPath);
+                  },
+                ),
+              ],
+            ),
+
+            // show Map<String,String> example
+            ...phonetic.example.entries.map(
+                  (entry) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${entry.key}: ',
+                      style: TextStyle(
+                        fontSize: ScreenUtil().setSp(16),
+                        fontWeight: FontWeight.bold,
                       ),
-                      CustomIconButton(
-                        height: ScreenUtil().setHeight(40),
-                        icon: Icon(
-                          Icons.volume_up_outlined,
-                          size: ScreenUtil().setHeight(18),
+                    ),
+                    Text(
+                      entry.value,
+                      style: TextStyle(
+                        fontSize: ScreenUtil().setSp(16),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 16.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  vertical: 16, horizontal: 16),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width *
+                    0.8, // 80% chiều rộng màn hình
+
+                child: RichText(
+                  text: TextSpan(
+                    text: 'Mẹo: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: ScreenUtil().setSp(18),
+                      color: Theme.of(context).primaryColor,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: phonetic.description,
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: ScreenUtil().setSp(14),
+                          color:
+                          isDarkTheme ? Colors.white : Colors.black,
                         ),
-                        onPressed: () {
-                          String audioPath =
-                              'audios/ipa/${phonetic.phoneticID}.mp3';
-                          injector
-                              .get<PlayAudioFromAssetUseCase>()
-                              .run(audioPath);
-                        },
                       ),
                     ],
                   ),
-
-                  // show Map<String,String> example
-                  ...phonetic.example.entries.map(
-                    (entry) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '${entry.key}: ',
-                            style: TextStyle(
-                              fontSize: ScreenUtil().setSp(16),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            entry.value,
-                            style: TextStyle(
-                              fontSize: ScreenUtil().setSp(16),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16.0,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 16),
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width *
-                          0.8, // 80% chiều rộng màn hình
-
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'Mẹo: ',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: ScreenUtil().setSp(18),
-                            color: Theme.of(context).primaryColor,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: phonetic.description,
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: ScreenUtil().setSp(14),
-                                color:
-                                    isDarkTheme ? Colors.white : Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Flexible(child: Container()),
-                  if (!kIsWeb)
-                    SafeArea(
-                      child: CustomButton(
-                        width: 200,
-                        onTap: () {
-                          _youtubePlayerController!.pauseVideo();
-                          ref.read(appNavigatorProvider).navigateTo(
-                                AppRoutes.pronunciation,
-                                arguments: phonetic.phoneticID,
-                              );
-                        },
-                        text: AppLocalizations.of(context)!.practiceNow,
-                      ),
-                    )
-                ],
+                ),
               ),
             ),
+            Flexible(child: Container()),
+            if (!kIsWeb)
+              SafeArea(
+                child: CustomButton(
+                  width: 200,
+                  onTap: () {
+                    _youtubePlayerController!.pauseVideo();
+                    ref.read(appNavigatorProvider).navigateTo(
+                      AppRoutes.pronunciation,
+                      arguments: phonetic.phoneticID,
+                    );
+                  },
+                  text: AppLocalizations.of(context)!.practiceNow,
+                ),
+              )
+          ],
+        ),
+      ),
     );
   }
 }

@@ -6,3 +6,4 @@ import 'package:speak_up/presentation/utilities/enums/language.dart';
 final appLanguageProvider = StateProvider<Language>((ref) {
   return injector.get<GetAppLanguageUseCase>().run();
 });
+//

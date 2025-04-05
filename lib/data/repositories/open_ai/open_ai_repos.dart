@@ -3,7 +3,7 @@ import 'dart:convert';
 
 Future<String> getSpeakingFeedback(String transcript, String part) async {
   const apiKey =
-      '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';
+      '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';
   const apiUrl = 'https://api.openai.com/v1/chat/completions';
 
   if (apiKey.isEmpty) {

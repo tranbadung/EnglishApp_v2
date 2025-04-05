@@ -16,11 +16,11 @@ class PronunciationButtons extends ConsumerWidget {
 
   const PronunciationButtons(
       {super.key,
-      required this.recordPath,
-      required this.onPlayRecord,
-      required this.onRecordButtonTap,
-      required this.onNextButtonTap,
-      required this.pronunciationAssessmentStatus});
+        required this.recordPath,
+        required this.onPlayRecord,
+        required this.onRecordButtonTap,
+        required this.onNextButtonTap,
+        required this.pronunciationAssessmentStatus});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,18 +30,18 @@ class PronunciationButtons extends ConsumerWidget {
         Flexible(child: Container()),
         recordPath != null
             ? CustomIconButton(
-                onPressed: onPlayRecord,
-                height: ScreenUtil().setHeight(64),
-                width: ScreenUtil().setWidth(64),
-                icon: AppIcons.playRecord(
-                  size: ScreenUtil().setSp(32),
-                  color: isDarkTheme ? Colors.grey[300] : Colors.grey[800],
-                ),
-              )
+          onPressed: onPlayRecord,
+          height: ScreenUtil().setHeight(64),
+          width: ScreenUtil().setWidth(64),
+          icon: AppIcons.playRecord(
+            size: ScreenUtil().setSp(32),
+            color: isDarkTheme ? Colors.grey[300] : Colors.grey[800],
+          ),
+        )
             : SizedBox(
-                width: ScreenUtil().setWidth(64),
-                height: ScreenUtil().setHeight(64),
-              ),
+          width: ScreenUtil().setWidth(64),
+          height: ScreenUtil().setHeight(64),
+        ),
         const SizedBox(
           width: 32,
         ),
@@ -55,18 +55,18 @@ class PronunciationButtons extends ConsumerWidget {
         ),
         pronunciationAssessmentStatus.canMoveToNext()
             ? CustomIconButton(
-                height: ScreenUtil().setHeight(64),
-                width: ScreenUtil().setWidth(64),
-                onPressed: onNextButtonTap,
-                icon: Icon(
-                  Icons.navigate_next_outlined,
-                  size: ScreenUtil().setSp(32),
-                  color: isDarkTheme ? Colors.grey[300] : Colors.grey[800],
-                ))
+            height: ScreenUtil().setHeight(64),
+            width: ScreenUtil().setWidth(64),
+            onPressed: onNextButtonTap,
+            icon: Icon(
+              Icons.navigate_next_outlined,
+              size: ScreenUtil().setSp(32),
+              color: isDarkTheme ? Colors.grey[300] : Colors.grey[800],
+            ))
             : SizedBox(
-                width: ScreenUtil().setWidth(64),
-                height: ScreenUtil().setHeight(64),
-              ),
+          width: ScreenUtil().setWidth(64),
+          height: ScreenUtil().setHeight(64),
+        ),
         Flexible(child: Container()),
       ],
     );

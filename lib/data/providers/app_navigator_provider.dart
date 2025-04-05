@@ -4,3 +4,4 @@ import 'package:speak_up/presentation/navigation/app_navigator.dart';
 final appNavigatorProvider = Provider<AppNavigator>((ref) {
   return AppNavigator();
 });
+//

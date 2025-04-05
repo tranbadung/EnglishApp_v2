@@ -25,6 +25,8 @@ import 'package:speak_up/presentation/widgets/loading_indicator/app_loading_indi
 
 import 'package:speak_up/data/repositories/local_database/local_dtb.dart';
 
+import '../admin/management_screen.dart';
+
 class ActivityViewModel extends StateNotifier<List<String>> {
   final UserActivityManager _userActivityManager;
   bool _isRecording = false;
@@ -71,7 +73,7 @@ String _formatStudyTime(int seconds) {
 }
 
 final activityViewModelProvider =
-    StateNotifierProvider<ActivityViewModel, List<String>>((ref) {
+StateNotifierProvider<ActivityViewModel, List<String>>((ref) {
   final firestoreRepository = FirestoreRepository(FirebaseFirestore.instance);
   return ActivityViewModel(UserActivityManager(firestoreRepository));
 });
@@ -114,7 +116,7 @@ class _ProgressTrackingScreenState
 
   Widget _buildStreakCard(List<String> userActivities) {
     String streakText = userActivities.firstWhere(
-      (activity) => activity.contains("Study Streak"),
+          (activity) => activity.contains("Study Streak"),
       orElse: () => "Study Streak: 0 ngày",
     );
 
@@ -238,12 +240,12 @@ Widget _buildHeader() {
 
 Widget _buildStatsRow(List<String> userActivities) {
   String daysText = userActivities.firstWhere(
-    (activity) => activity.contains("Số ngày truy cập"),
+        (activity) => activity.contains("Số ngày truy cập"),
     orElse: () => "0",
   );
 
   String timeText = userActivities.firstWhere(
-    (activity) => activity.contains("Tổng thời gian học"),
+        (activity) => activity.contains("Tổng thời gian học"),
     orElse: () => "0",
   );
 
@@ -331,20 +333,20 @@ Widget _buildRecentActivities(List<String> activities) {
           activities.isEmpty
               ? Text('Chưa có hoạt động nào.')
               : ListView.separated(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: activities.length,
-                  separatorBuilder: (context, index) => Divider(),
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.green,
-                        child: Icon(Icons.check, color: Colors.white),
-                      ),
-                      title: Text(activities[index]),
-                    );
-                  },
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: activities.length,
+            separatorBuilder: (context, index) => Divider(),
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.green,
+                  child: Icon(Icons.check, color: Colors.white),
                 ),
+                title: Text(activities[index]),
+              );
+            },
+          ),
         ],
       ),
     ),
@@ -356,7 +358,7 @@ Widget _buildDayBoxes(int loginDayIndex) {
   final daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   return Row(
     mainAxisAlignment:
-        kIsWeb ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
+    kIsWeb ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
     children: List.generate(7, (index) {
       bool isToday = index == loginDayIndex;
       return Expanded(
@@ -393,11 +395,11 @@ int _getHoursFromActivity(String activity) {
 }
 
 final profileViewModelProvider =
-    StateNotifierProvider.autoDispose<ProfileViewModel, ProfileState>((ref) =>
-        ProfileViewModel(
-            injector.get<GetAppThemeUseCase>(),
-            injector.get<SwitchAppThemeUseCase>(),
-            injector.get<SignOutUseCase>()));
+StateNotifierProvider.autoDispose<ProfileViewModel, ProfileState>((ref) =>
+    ProfileViewModel(
+        injector.get<GetAppThemeUseCase>(),
+        injector.get<SwitchAppThemeUseCase>(),
+        injector.get<SignOutUseCase>()));
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -407,12 +409,30 @@ class ProfileView extends ConsumerStatefulWidget {
 }
 
 class ProfileViewState extends ConsumerState<ProfileView> {
+  String userRole = 'user'; // Mặc định là 'user'
+
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
       ref.read(profileViewModelProvider.notifier).getThemeData();
+      _getUserRole(); // Gọi phương thức để lấy vai trò người dùng
     });
+  }
+
+  Future<void> _getUserRole() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (userDoc.exists) {
+        setState(() {
+          userRole = userDoc['role'] ?? 'user'; // Lấy vai trò từ Firestore
+        });
+      }
+    }
   }
 
   Future<void> _buildLogoutDialogBuilder(BuildContext context) {
@@ -571,12 +591,12 @@ class ProfileViewState extends ConsumerState<ProfileView> {
                 Padding(
                   padding: EdgeInsets.all(isWideScreen
                       ? 48.0
-                      : 32.0), // Thay đổi padding dựa trên kích thước màn hình
+                      : 32.0), // Thay ��ổi padding dựa trên kích thước màn hình
                   child: CircleAvatar(
                     radius: isWideScreen
                         ? 48
                         : ScreenUtil()
-                            .setHeight(24), // Thay đổi kích thước cho web
+                        .setHeight(24), // Thay đổi kích thước cho web
                     child: ClipOval(
                       child: user?.photoURL != null
                           ? Image.network(user!.photoURL!)
@@ -590,7 +610,7 @@ class ProfileViewState extends ConsumerState<ProfileView> {
                     fontSize: isWideScreen
                         ? 32
                         : ScreenUtil()
-                            .setSp(24.0), // Thay đổi kích thước cho web
+                        .setSp(24.0), // Thay đổi kích thước cho web
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -655,13 +675,22 @@ class ProfileViewState extends ConsumerState<ProfileView> {
                 .run(ref.read(appLanguageProvider.notifier).state);
           },
         ),
-        buildListTile(
-          AppIcons.about(size: isWideScreen ? 64 : 48),
-          AppLocalizations.of(context)!.about,
-          onTap: () {
-            ref.read(appNavigatorProvider).navigateTo(AppRoutes.about);
-          },
-        ),
+        // buildListTile(
+        //   AppIcons.about(size: isWideScreen ? 64 : 48),
+        //   AppLocalizations.of(context)!.about,
+        //   onTap: () {
+        //     ref.read(appNavigatorProvider).navigateTo(AppRoutes.about);
+        //   },
+        // ),
+        if (userRole == 'admin') // Kiểm tra vai trò
+          buildListTile(
+            AppIcons.about(size: isWideScreen ? 64 : 48),
+            'Manager',
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ManagementScreen()));
+            },
+          ),
         buildListTile(
           AppIcons.logout(size: isWideScreen ? 64 : 46),
           AppLocalizations.of(context)!.logOut,

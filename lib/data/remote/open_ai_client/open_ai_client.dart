@@ -16,11 +16,11 @@ abstract class OpenAIClient {
 
  Dio dioSetup(String apiKey) {
   final dio = dioSetup(
-      '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');
+      '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');
   final openAIClient = OpenAIClient(dio);
 
    dio.options.headers['Authorization'] =
-      'Bearer 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';
+      'Bearer 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';
 
    dio.interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) {

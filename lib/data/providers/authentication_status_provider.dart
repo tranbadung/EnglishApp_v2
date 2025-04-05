@@ -4,3 +4,4 @@ import 'package:speak_up/injection/injector.dart';
 
 final authenticationStatusProvider =
     StateProvider<bool>((ref) => injector.get<IsSignedInUseCase>().run());
+//

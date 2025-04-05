@@ -20,11 +20,8 @@ import 'package:speak_up/presentation/widgets/loading_indicator/app_loading_indi
 import 'ipa_state.dart';
 
 final ipaViewModelProvider =
-    StateNotifierProvider.autoDispose<IpaViewModel, IpaState>(
-  (ref) => IpaViewModel(
-    injector.get<GetPhoneticListUseCase>(),
-    injector.get<GetPhoneticDoneListUseCase>(),
-  ),
+StateNotifierProvider.autoDispose<IpaViewModel, IpaState>(
+      (ref) => IpaViewModel(),
 );
 
 class IpaView extends ConsumerStatefulWidget {
@@ -36,7 +33,7 @@ class IpaView extends ConsumerStatefulWidget {
 
 class _IpaViewState extends ConsumerState<IpaView>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+  late TabController _tabController;
 
   IpaViewModel get _viewModel => ref.read(ipaViewModelProvider.notifier);
 
@@ -44,15 +41,9 @@ class _IpaViewState extends ConsumerState<IpaView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    Future.delayed(
-      Duration.zero,
-      () => _init(),
-    );
-  }
-
-  Future<void> _init() async {
-    await _viewModel.getPhoneticList();
-    await _viewModel.fetchPhoneticDoneList();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _viewModel.refreshData();
+    });
   }
 
   @override
@@ -62,57 +53,69 @@ class _IpaViewState extends ConsumerState<IpaView>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ref.read(ipaViewModelProvider.notifier).refreshData();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(ipaViewModelProvider);
+    final viewModel = ref.read(ipaViewModelProvider.notifier);
 
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(
-              ScreenUtil().setHeight(0)), // Chiều cao của TabBar
-          child: TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(
-                child: Text(
-                  AppLocalizations.of(context)!.vowels,
-                  style: TextStyle(
-                    fontSize: ScreenUtil().setSp(12),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _viewModel.refreshData();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(
+                ScreenUtil().setHeight(0)), // Chiều cao của TabBar
+            child: TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(
+                  child: Text(
+                    AppLocalizations.of(context)!.vowels,
+                    style: TextStyle(
+                      fontSize: ScreenUtil().setSp(12),
+                    ),
                   ),
                 ),
-              ),
-              Tab(
-                child: Text(
-                  AppLocalizations.of(context)!.consonants,
-                  style: TextStyle(
-                    fontSize: ScreenUtil().setSp(12),
+                Tab(
+                  child: Text(
+                    AppLocalizations.of(context)!.consonants,
+                    style: TextStyle(
+                      fontSize: ScreenUtil().setSp(12),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+        body: state.loadingStatus == LoadingStatus.success &&
+            state.progressLoadingStatus == LoadingStatus.success
+            ? TabBarView(
+          controller: _tabController,
+          children: [
+            buildVowels(state.vowels, state.isDoneVowelList),
+            buildConsonants(state.consonants, state.isDoneConsonantList),
+          ],
+        )
+            : state.loadingStatus == LoadingStatus.error ||
+            state.progressLoadingStatus == LoadingStatus.error
+            ? TabBarView(
+          controller: _tabController,
+          children: [
+            buildVowels(phoneticData, state.isDoneVowelList),
+            buildConsonants(phoneticData, state.isDoneConsonantList),
+          ],
+        )
+            : const AppLoadingIndicator(),
       ),
-      body: state.loadingStatus == LoadingStatus.success &&
-              state.progressLoadingStatus == LoadingStatus.success
-          ? TabBarView(
-              controller: _tabController,
-              children: [
-                buildVowels(state.vowels, state.isDoneVowelList),
-                buildConsonants(state.consonants, state.isDoneConsonantList),
-              ],
-            )
-          : state.loadingStatus == LoadingStatus.error ||
-                  state.progressLoadingStatus == LoadingStatus.error
-              ? TabBarView(
-                  controller: _tabController,
-                  children: [
-                    buildVowels(phoneticData, state.isDoneVowelList),
-                    buildConsonants(phoneticData, state.isDoneConsonantList),
-                  ],
-                )
-              : const AppLoadingIndicator(),
     );
   }
 
@@ -161,9 +164,9 @@ class _IpaViewState extends ConsumerState<IpaView>
       child: InkWell(
         onTap: () {
           ref.read(appNavigatorProvider).navigateTo(
-                AppRoutes.phonetic,
-                arguments: phonetic,
-              );
+            AppRoutes.phonetic,
+            arguments: phonetic,
+          );
         },
         child: Container(
           height: 200,
@@ -198,12 +201,15 @@ class _IpaViewState extends ConsumerState<IpaView>
                       height: ScreenUtil().setHeight(4),
                     ),
                     Text(
-                      phonetic.example.entries.first.key,
+                      phonetic.example.isNotEmpty
+                          ? phonetic.example.keys
+                          .elementAt(0) // 0 là vị trí phần tử muốn lấy
+                          : "No Example",
                       style: TextStyle(
                         fontSize: ScreenUtil().setSp(16),
                         color: isDarkTheme ? Colors.white : Colors.black,
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -221,5 +227,9 @@ class _IpaViewState extends ConsumerState<IpaView>
         ),
       ),
     );
+  }
+
+  void refreshData() {
+    ref.read(ipaViewModelProvider.notifier).refreshData();
   }
 }

@@ -45,7 +45,7 @@ class AuthenticationRepository {
     if (googleUser == null) return Future.error('Google sign in failed');
 
     final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    await googleUser.authentication;
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,

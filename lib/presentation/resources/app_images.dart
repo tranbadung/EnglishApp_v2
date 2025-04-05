@@ -28,7 +28,7 @@ class AppImages {
 
   static Widget signIn({double? width, double? height, BoxFit? boxFit}) {
     return Image.asset(
-      '$_imagesPath/sign_in.png',
+      '$_imagesPath/login.gif',
       width: width,
       height: height,
       fit: boxFit,
@@ -46,7 +46,7 @@ class AppImages {
 
   static Widget signInEmail({double? width, double? height, BoxFit? boxFit}) {
     return Image.asset(
-      '$_imagesPath/sign_in_email.png',
+      '$_imagesPath/login_email.png',
       width: width,
       height: height,
       fit: boxFit,

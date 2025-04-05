@@ -17,8 +17,13 @@ import 'package:speak_up/presentation/pages/pattern_lesson_detail/patern_lessson
 import 'package:speak_up/presentation/pages/admin/Users.dart';
 import 'package:speak_up/presentation/pages/profile/profile_view.dart';
 import 'package:speak_up/presentation/pages/quiz/quiz_view_start.dart';
+import '../../Feature/screen/feature/chatbot_feature.dart';
+import '../../Feature/screen/feature/translator_feature.dart';
+import '../../Feature/screen/home_screen.dart';
+import '../../Feature/screen/splash_screen.dart';
 import 'main_menu_state.dart';
 import 'main_menu_view_model.dart';
+
 
 final mainMenuViewModelProvider =
     StateNotifierProvider.autoDispose<MainMenuViewModel, MainMenuState>(
@@ -44,6 +49,8 @@ class MainMenuView extends ConsumerWidget {
       const QuizStartScreen(),
       LessonView1(),
       ProgressTrackingScreen(),
+      const ChatBotFeature(),
+
       UsersListScreen(),
       IdiomListScreen(),
       WordListScreen(),
@@ -52,6 +59,9 @@ class MainMenuView extends ConsumerWidget {
       ExpressionTypeListScreen(),
       PhoneticListScreen(),
       TenseUsageListScreen(),
+
+
+
     ];
 
     final List<BottomNavigationBarItem> bottomNavItems = state.userRole ==
@@ -67,6 +77,9 @@ class MainMenuView extends ConsumerWidget {
                 Icons.play_lesson, 'Flashcards', state.currentTabIndex == 3),
             _buildBottomNavItem(Icons.access_time_filled_rounded,
                 'Kích hoạt tài khoản', state.currentTabIndex == 4),
+
+            _buildBottomNavItem(Icons.chat, 'AI',
+                state.currentTabIndex == 5),
           ]
         : [
             _buildBottomNavItem(Icons.maps_home_work, 'Khóa học của tôi',
@@ -77,8 +90,14 @@ class MainMenuView extends ConsumerWidget {
                 Icons.quiz, ' Flashcards', state.currentTabIndex == 2),
             _buildBottomNavItem(Icons.play_lesson, '  Đề thi online',
                 state.currentTabIndex == 3),
+
+
             _buildBottomNavItem(Icons.access_time_filled_rounded,
                 'Kích hoạt tài khoản', state.currentTabIndex == 4),
+
+            _buildBottomNavItem(Icons.chat, '  AI',
+                state.currentTabIndex == 5),
+
           ];
 
     return Scaffold(
@@ -91,32 +110,7 @@ class MainMenuView extends ConsumerWidget {
               onTap: (index) => viewModel.changeTab(index),
               items: bottomNavItems,
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            backgroundColor: Colors.transparent,
-            isScrollControlled: true,
-            builder: (BuildContext context) {
-              return Container(
-                height: kIsWeb
-                    ? MediaQuery.of(context).size.height
-                    : MediaQuery.of(context).size.height * 0.5,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                ),
-                child: ChatView(),
-              );
-            },
-          );
-        },
-        child: Image.asset('assets/images/chatbot.png'),
-      ),
+
     );
   }
 
@@ -154,20 +148,21 @@ class MainMenuView extends ConsumerWidget {
         Row(
           children: state.userRole == 'admin'
               ? [
-                  _buildNavItem(context, ref, 'Manage Users', 5),
-                  _buildNavItem(context, ref, 'Manage Idiom', 6),
-                  _buildNavItem(context, ref, 'Manage Word', 7),
-                  _buildNavItem(context, ref, 'Manage Lesson', 8),
-                  _buildNavItem(context, ref, 'Manage Pattern', 9),
-                  _buildNavItem(context, ref, 'Manage Expression', 10),
-                  _buildNavItem(context, ref, 'Manage Phonetic', 11),
-                  _buildNavItem(context, ref, 'Manage TenseUsage', 12),
+                  _buildNavItem(context, ref, 'Manage Users', 6),
+                  _buildNavItem(context, ref, 'Manage Idiom', 7),
+                  _buildNavItem(context, ref, 'Manage Word', 8),
+                  _buildNavItem(context, ref, 'Manage Lesson', 9),
+                  _buildNavItem(context, ref, 'Manage Pattern', 10),
+                  _buildNavItem(context, ref, 'Manage Expression', 11),
+                  _buildNavItem(context, ref, 'Manage Phonetic', 12),
+                  _buildNavItem(context, ref, 'Manage TenseUsage', 13),
                 ]
               : [
                   _buildNavItem(context, ref, 'Khóa học của tôi', 0),
                   _buildNavItem(context, ref, 'Chương trình học', 1),
                   _buildNavItem(context, ref, 'Đề thi online', 3),
                   _buildNavItem(context, ref, 'Flashcards', 2),
+                  _buildNavItem(context, ref, 'CHAT AI', 5),
                   _buildNavItem(context, ref, 'Tài khoản', 4),
                 ],
         ),

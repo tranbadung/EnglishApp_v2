@@ -403,15 +403,7 @@ class _QuizScreenPathState extends ConsumerState<QuizScreenPath> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatView()),
-          );
-        },
-        child: Image.asset('assets/images/chatbot.png'),
-      ),
+
     );
   }
 }

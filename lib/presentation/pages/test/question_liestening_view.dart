@@ -38,7 +38,7 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
     _startTimer();
     _controllers = List.generate(
       testQuestions.where((q) => q['blank']).length,
-      (index) => TextEditingController(),
+          (index) => TextEditingController(),
     );
   }
 
@@ -65,7 +65,7 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
       var question = testQuestions[i];
       if (question['blank']) {
         String userAnswer =
-            _controllers[controllerIndex].text.toLowerCase().trim();
+        _controllers[controllerIndex].text.toLowerCase().trim();
         String correctAnswer = question['correctAnswer'].toLowerCase().trim();
         if (userAnswer == correctAnswer) {
           correctCount++;
@@ -202,13 +202,15 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
             ),
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 16.0, // Khoảng cách giữa các phần tử
           children: [
             _buildTimerDisplay(),
             _buildQuestionCounter(),
           ],
         ),
+
       ],
     );
   }
@@ -218,7 +220,7 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color:
-            _timeRemaining.inMinutes < 5 ? Colors.red[100] : Colors.blue[100],
+        _timeRemaining.inMinutes < 5 ? Colors.red[100] : Colors.blue[100],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -396,8 +398,8 @@ class _TestQuestionPageState extends State<TestQuestionlisteningPage> {
                         color: percentage >= 75
                             ? Colors.green
                             : percentage >= 50
-                                ? Colors.orange
-                                : Colors.red,
+                            ? Colors.orange
+                            : Colors.red,
                       ),
                     ),
                     Text(

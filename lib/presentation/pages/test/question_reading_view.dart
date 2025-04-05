@@ -24,7 +24,7 @@ class TestQuestionReadingPage extends StatefulWidget {
 
 class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
   final List<TextEditingController> _controllers =
-      List.generate(7, (index) => TextEditingController());
+  List.generate(7, (index) => TextEditingController());
   final List<String?> _selectedAnswers = List.filled(6, null);
   Timer? _timer;
   Duration _timeRemaining = const Duration(minutes: 20);
@@ -81,10 +81,11 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
 
   Widget _buildTimerDisplay() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: 5, vertical: 8), // Giảm padding
       decoration: BoxDecoration(
         color:
-            _timeRemaining.inMinutes < 5 ? Colors.red[100] : Colors.blue[100],
+        _timeRemaining.inMinutes < 5 ? Colors.red[100] : Colors.blue[100],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -95,12 +96,16 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
             color: _timeRemaining.inMinutes < 5 ? Colors.red : Colors.blue,
           ),
           const SizedBox(width: 8),
-          Text(
-            'Time remaining: ${_formatDuration(_timeRemaining)}',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: _timeRemaining.inMinutes < 5 ? Colors.red : Colors.blue,
+          Flexible(
+            // Sử dụng Flexible
+            child: Text(
+              'Time remaining: ${_formatDuration(_timeRemaining)}',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: _timeRemaining.inMinutes < 5 ? Colors.red : Colors.blue,
+              ),
+              overflow: TextOverflow.ellipsis, // Thêm overflow
             ),
           ),
         ],
@@ -111,8 +116,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
   Widget _buildQuestionCounter() {
     int totalQuestions = _selectedAnswers.length + _controllers.length;
     int answeredQuestions = _selectedAnswers
-            .where((answer) => answer != null)
-            .length +
+        .where((answer) => answer != null)
+        .length +
         _controllers.where((controller) => controller.text.isNotEmpty).length;
 
     return Container(
@@ -210,8 +215,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                         color: percentage >= 75
                             ? Colors.green
                             : percentage >= 50
-                                ? Colors.orange
-                                : Colors.red,
+                            ? Colors.orange
+                            : Colors.red,
                       ),
                     ),
                     Text(
@@ -290,7 +295,7 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                     const SizedBox(height: 16),
                     ...List.generate(_controllers.length, (index) {
                       String userAnswer =
-                          _controllers[index].text.toLowerCase().trim();
+                      _controllers[index].text.toLowerCase().trim();
                       String correctAnswer = correctSummaryAnswers[index]!;
                       bool isCorrect =
                           userAnswer == correctAnswer.toLowerCase();
@@ -431,18 +436,18 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
                       children: ['A', 'B', 'C', 'D', 'E', 'F', 'G']
                           .map(
                             (option) => ChoiceChip(
-                              label: Text(option),
-                              selected: _selectedAnswers[index] == option,
-                              onSelected: !_isTestSubmitted
-                                  ? (selected) {
-                                      setState(() {
-                                        _selectedAnswers[index] =
-                                            selected ? option : null;
-                                      });
-                                    }
-                                  : null,
-                            ),
-                          )
+                          label: Text(option),
+                          selected: _selectedAnswers[index] == option,
+                          onSelected: !_isTestSubmitted
+                              ? (selected) {
+                            setState(() {
+                              _selectedAnswers[index] =
+                              selected ? option : null;
+                            });
+                          }
+                              : null,
+                        ),
+                      )
                           .toList(),
                     ),
                   ],
@@ -575,8 +580,8 @@ class _TestQuestionReadingPageState extends State<TestQuestionReadingPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildTimerDisplay(),
-                _buildQuestionCounter(),
+                Expanded(child: _buildTimerDisplay()),
+                Expanded(child: _buildQuestionCounter()),
               ],
             ),
             buildReadingPassage(),

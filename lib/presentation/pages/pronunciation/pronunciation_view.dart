@@ -31,7 +31,7 @@ import 'package:speak_up/presentation/widgets/text/pronunciation_score_text.dart
 
 final pronunciationViewModelProvider = StateNotifierProvider.autoDispose<
     PronunciationViewModel, PronunciationState>(
-  (ref) => PronunciationViewModel(
+      (ref) => PronunciationViewModel(
     injector.get<GetCurrentUserUseCase>(),
     injector.get<GetWordListByPhoneticIDUSeCase>(),
     injector.get<SpeakFromTextUseCase>(),
@@ -67,7 +67,7 @@ class _PronunciationViewState extends ConsumerState<PronunciationView> {
     super.initState();
     Future.delayed(
       Duration.zero,
-      () => _init(),
+          () => _init(),
     );
   }
 
@@ -90,7 +90,7 @@ class _PronunciationViewState extends ConsumerState<PronunciationView> {
         ref.watch(pronunciationViewModelProvider).wordList.length - 1) {
       showCompleteBottomSheet(context);
       await _viewModel.updatePhoneticProgress(phoneticID);
-      await ref.read(ipaViewModelProvider.notifier).fetchPhoneticDoneList();
+      await ref.read(ipaViewModelProvider.notifier).refreshData();
       _viewModel.playCompleteAudio();
     } else {
       _pageController.nextPage(
@@ -123,65 +123,65 @@ class _PronunciationViewState extends ConsumerState<PronunciationView> {
       ),
       body: state.loadingStatus == LoadingStatus.success
           ? Column(
+        children: [
+          const SizedBox(
+            height: 16,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
               children: [
+                AppImages.questioner(
+                  width: ScreenUtil().setWidth(48),
+                  height: ScreenUtil().setHeight(48),
+                ),
                 const SizedBox(
-                  height: 16,
+                  width: 16,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      AppImages.questioner(
-                        width: ScreenUtil().setWidth(48),
-                        height: ScreenUtil().setHeight(48),
-                      ),
-                      const SizedBox(
-                        width: 16,
-                      ),
-                      Flexible(
-                        child: Text(
-                          state.pronunciationAssessmentStatus
-                              .getAssistantText(context),
-                          style: TextStyle(
-                            fontSize: ScreenUtil().setSp(14),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+                Flexible(
+                  child: Text(
+                    state.pronunciationAssessmentStatus
+                        .getAssistantText(context),
+                    style: TextStyle(
+                      fontSize: ScreenUtil().setSp(14),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: state.wordList.length,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (BuildContext context, int index) {
-                      return _buildExampleItem(state, index);
-                    },
-                  ),
-                ),
-                PronunciationScoreCard(
-                  pronunciationScore: state.speechSentence?.pronScore ?? 0,
-                  accuracyScore: state.speechSentence?.accuracyScore ?? 0,
-                  fluencyScore: state.speechSentence?.fluencyScore ?? 0,
-                  completenessScore:
-                      state.speechSentence?.completenessScore ?? 0,
-                ),
-                SizedBox(height: ScreenUtil().setHeight(16)),
-                PronunciationButtons(
-                    recordPath: state.recordPath,
-                    onPlayRecord: _viewModel.playRecord,
-                    onRecordButtonTap: _viewModel.onRecordButtonTap,
-                    onNextButtonTap: onNextButtonTap,
-                    pronunciationAssessmentStatus:
-                        state.pronunciationAssessmentStatus),
-                SizedBox(height: ScreenUtil().setHeight(16)),
               ],
-            )
+            ),
+          ),
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: state.wordList.length,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (BuildContext context, int index) {
+                return _buildExampleItem(state, index);
+              },
+            ),
+          ),
+          PronunciationScoreCard(
+            pronunciationScore: state.speechSentence?.pronScore ?? 0,
+            accuracyScore: state.speechSentence?.accuracyScore ?? 0,
+            fluencyScore: state.speechSentence?.fluencyScore ?? 0,
+            completenessScore:
+            state.speechSentence?.completenessScore ?? 0,
+          ),
+          SizedBox(height: ScreenUtil().setHeight(16)),
+          PronunciationButtons(
+              recordPath: state.recordPath,
+              onPlayRecord: _viewModel.playRecord,
+              onRecordButtonTap: _viewModel.onRecordButtonTap,
+              onNextButtonTap: onNextButtonTap,
+              pronunciationAssessmentStatus:
+              state.pronunciationAssessmentStatus),
+          SizedBox(height: ScreenUtil().setHeight(16)),
+        ],
+      )
           : state.loadingStatus == LoadingStatus.loading
-              ? const AppLoadingIndicator()
-              : const AppErrorView(),
+          ? const AppLoadingIndicator()
+          : const AppErrorView(),
     );
   }
 
@@ -223,16 +223,16 @@ class _PronunciationViewState extends ConsumerState<PronunciationView> {
         ),
         state.speechSentence?.words == null
             ? Text(
-                state.wordList[index].translation,
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(16),
-                ),
-              )
+          state.wordList[index].translation,
+          style: TextStyle(
+            fontSize: ScreenUtil().setSp(16),
+          ),
+        )
             : PronunciationScoreText(
-                words: state.speechSentence?.words ?? [],
-                recordPath: state.recordPath ?? '',
-                fontSize: ScreenUtil().setSp(32),
-              ),
+          words: state.speechSentence?.words ?? [],
+          recordPath: state.recordPath ?? '',
+          fontSize: ScreenUtil().setSp(32),
+        ),
         Flexible(child: Container()),
       ],
     );
